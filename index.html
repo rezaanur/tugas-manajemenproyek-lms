@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduSmart LMS - Sistem Manajemen Pembelajaran Sekolah</title>
-  <meta name="description" content="Aplikasi antarmuka Learning Management System (LMS) modern untuk sekolah: kelola materi, tugas, kuis interaktif, absensi, dan rekapitulasi nilai.">
+  <title>EduSmart LMS - Sistem Manajemen Pembelajaran Sekolah & Kampus</title>
+  <meta name="description" content="Aplikasi antarmuka Learning Management System (LMS) modern: kelola materi, tugas, kuis interaktif, absensi, dan rekapitulasi nilai dengan hak akses Dosen vs Mahasiswa.">
   
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,7 +63,7 @@
           </div>
           <div>
             <h1 class="text-base font-extrabold text-slate-900 tracking-tight leading-tight">EduSmart LMS</h1>
-            <p id="school-display-name" class="text-[11px] text-slate-400 font-medium truncate">SMA / Kampus Saya</p>
+            <p id="school-display-name" class="text-[11px] text-slate-400 font-medium truncate">Fakultas Ilmu Komputer</p>
           </div>
         </div>
       </div>
@@ -72,13 +72,14 @@
       <div class="px-5 pt-4">
         <div class="p-3 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
           <div>
-            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Peran Akun</div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Peran Aktif</div>
             <div id="user-role-badge" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 inline-block mt-0.5">
-              Siswa / Mahasiswa
+              Mahasiswa / Siswa
             </div>
           </div>
-          <button id="btn-switch-role" class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-semibold text-slate-700 hover:text-indigo-600 shadow-2xs transition flex items-center gap-1" title="Ganti antara mode Siswa dan Guru">
-            <i class="bi bi-arrow-repeat text-indigo-500"></i> Ganti Role
+          <button id="btn-switch-role" class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-semibold text-slate-700 hover:text-indigo-600 shadow-2xs transition flex items-center gap-1" title="Ganti antara mode Dosen dan Mahasiswa">
+            <i class="bi bi-arrow-repeat text-indigo-500"></i>
+            <span id="btn-switch-role-text">Ganti Role</span>
           </button>
         </div>
       </div>
@@ -114,10 +115,10 @@
 
         <a href="#nilai" data-view-target="nilai" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
           <i class="bi bi-award text-lg"></i>
-          <span>Rekap Nilai / Rapor</span>
+          <span>Buku Nilai / Rapor</span>
         </a>
 
-        <div class="pt-4 px-3 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kelola & Pengaturan</div>
+        <div class="pt-4 px-3 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pengaturan & Bantuan</div>
         
         <button id="btn-edit-profil" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition">
           <i class="bi bi-person-gear text-base text-slate-400"></i>
@@ -135,8 +136,8 @@
         <div class="flex items-center gap-3">
           <img id="user-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/20 shadow-xs">
           <div class="flex-1 min-w-0">
-            <h4 id="user-name" class="text-xs font-bold text-slate-800 truncate">Siswa (Nama Anda)</h4>
-            <p id="user-subinfo" class="text-[11px] text-slate-400 truncate">Kelas XII • NIS: 2024001</p>
+            <h4 id="user-name" class="text-xs font-bold text-slate-800 truncate">Budi Pratama</h4>
+            <p id="user-subinfo" class="text-[11px] text-slate-400 truncate">Semester 7 - TI • NIM: 2024001</p>
           </div>
           <button onclick="openModalEditProfil()" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition" title="Edit Profil">
             <i class="bi bi-pencil-square text-sm"></i>
@@ -158,11 +159,16 @@
           </button>
           <div>
             <div class="text-[11px] text-slate-400 font-medium">Halaman Aktif</div>
-            <h2 id="view-title-breadcrumb" class="text-base font-bold text-slate-800 leading-tight">Dashboard Utama</h2>
+            <h2 id="view-title-breadcrumb" class="text-base font-bold text-slate-800 leading-tight">Dashboard</h2>
           </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+          <!-- Role Indicator Pill -->
+          <span id="header-role-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+            Mode: Mahasiswa
+          </span>
+
           <!-- Realtime Date & Clock -->
           <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold">
             <i class="bi bi-clock-history text-indigo-500"></i>
@@ -187,24 +193,45 @@
           <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-600 p-6 md:p-8 text-white shadow-xl shadow-indigo-600/10">
             <div class="relative z-10 max-w-2xl">
               <span id="dash-greeting-role" class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md mb-3 text-indigo-100">
-                Portal Pembelajaran Siswa / Mahasiswa
+                Portal Mahasiswa / Siswa
               </span>
               <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
-                Selamat Datang, <span id="dash-greeting-name">Siswa</span>! 👋
+                Selamat Datang, <span id="dash-greeting-name">Budi Pratama</span>! 👋
               </h2>
-              <p class="text-indigo-100 text-xs md:text-sm leading-relaxed mb-6">
-                Data LMS siap diisi secara mandiri. Tambahkan materi, buat tugas baru, susun kuis interaktif, isi presensi, dan input nilai mata pelajaran Anda.
+              <p id="dash-greeting-desc" class="text-indigo-100 text-xs md:text-sm leading-relaxed mb-6">
+                Portal pembelajaran aktif. Pelajari modul, kumpulkan tugas sebelum batas waktu, kerjakan kuis berwaktu, dan catat presensi mandiri.
               </p>
+              
+              <!-- Action Buttons tailored by Role -->
               <div class="flex flex-wrap items-center gap-3">
-                <button onclick="openModalTambahMateri()" class="px-4 py-2.5 rounded-xl bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50 transition shadow-sm inline-flex items-center gap-2">
-                  <i class="bi bi-plus-circle-fill"></i> Tambah Materi
-                </button>
-                <button onclick="openModalTambahTugas()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
-                  <i class="bi bi-journal-plus"></i> Tambah Tugas
-                </button>
-                <a href="#absensi" data-view-target="absensi" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
-                  <i class="bi bi-fingerprint"></i> Isi Presensi
-                </a>
+                <!-- DOSEN ONLY BUTTONS -->
+                <div class="guru-only hidden flex flex-wrap gap-3">
+                  <button onclick="openModalTambahMateri()" class="px-4 py-2.5 rounded-xl bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50 transition shadow-sm inline-flex items-center gap-2">
+                    <i class="bi bi-cloud-arrow-up-fill"></i> Upload Materi
+                  </button>
+                  <button onclick="openModalTambahTugas()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
+                    <i class="bi bi-journal-plus"></i> Buat Tugas
+                  </button>
+                  <button onclick="openModalBuatKuis()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
+                    <i class="bi bi-patch-question-fill"></i> Buat Kuis
+                  </button>
+                  <a href="#nilai" data-view-target="nilai" class="px-4 py-2.5 rounded-xl bg-violet-500/80 hover:bg-violet-500 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
+                    <i class="bi bi-table"></i> Buku Nilai Mahasiswa
+                  </a>
+                </div>
+
+                <!-- MAHASISWA ONLY BUTTONS -->
+                <div class="siswa-only flex flex-wrap gap-3">
+                  <a href="#tugas" data-view-target="tugas" class="px-4 py-2.5 rounded-xl bg-white text-indigo-700 text-xs font-bold hover:bg-indigo-50 transition shadow-sm inline-flex items-center gap-2">
+                    <i class="bi bi-journal-check"></i> Lihat Tugas Saya
+                  </a>
+                  <a href="#kuis" data-view-target="kuis" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
+                    <i class="bi bi-stopwatch"></i> Kerjakan Kuis
+                  </a>
+                  <a href="#absensi" data-view-target="absensi" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition inline-flex items-center gap-2">
+                    <i class="bi bi-fingerprint"></i> Presensi Hari Ini
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -215,45 +242,45 @@
             </div>
           </div>
 
-          <!-- Quick Stats Grid -->
+          <!-- Quick Stats Grid (Dynamic based on Role) -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Stat 1: Materi -->
+            <!-- Stat 1 -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
                   <i class="bi bi-folder-fill"></i>
                 </div>
-                <span class="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Katalog</span>
+                <span class="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Modul</span>
               </div>
-              <div id="stat-materi-count" class="text-2xl font-extrabold text-slate-800">0</div>
-              <p class="text-xs text-slate-500 mt-0.5">Materi Pembelajaran</p>
+              <div id="stat-card1-val" class="text-2xl font-extrabold text-slate-800">0</div>
+              <p id="stat-card1-title" class="text-xs text-slate-500 mt-0.5">Materi Tersedia</p>
             </div>
 
-            <!-- Stat 2: Tugas -->
+            <!-- Stat 2 -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
                   <i class="bi bi-check2-circle"></i>
                 </div>
-                <span class="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Evaluasi</span>
+                <span class="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Tugas</span>
               </div>
-              <div id="stat-tugas-count" class="text-2xl font-extrabold text-slate-800">0</div>
-              <p id="stat-tugas-label" class="text-xs text-slate-500 mt-0.5">Tugas Perlu Dikerjakan</p>
+              <div id="stat-card2-val" class="text-2xl font-extrabold text-slate-800">0</div>
+              <p id="stat-card2-title" class="text-xs text-slate-500 mt-0.5">Tugas Perlu Dikerjakan</p>
             </div>
 
-            <!-- Stat 3: Rata-rata Nilai -->
+            <!-- Stat 3 -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-lg">
                   <i class="bi bi-award-fill"></i>
                 </div>
-                <span class="text-[11px] font-semibold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">Rapor</span>
+                <span class="text-[11px] font-semibold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">Evaluasi</span>
               </div>
-              <div id="stat-nilai-avg" class="text-2xl font-extrabold text-slate-800">0</div>
-              <p class="text-xs text-slate-500 mt-0.5">Rata-rata Nilai Rapor</p>
+              <div id="stat-card3-val" class="text-2xl font-extrabold text-slate-800">0</div>
+              <p id="stat-card3-title" class="text-xs text-slate-500 mt-0.5">Rata-rata Rapor Saya</p>
             </div>
 
-            <!-- Stat 4: Absensi -->
+            <!-- Stat 4 -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
@@ -261,8 +288,8 @@
                 </div>
                 <span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Kehadiran</span>
               </div>
-              <div id="stat-absensi-rate" class="text-2xl font-extrabold text-slate-800">0%</div>
-              <p class="text-xs text-slate-500 mt-0.5">Tingkat Kehadiran</p>
+              <div id="stat-card4-val" class="text-2xl font-extrabold text-slate-800">0%</div>
+              <p id="stat-card4-title" class="text-xs text-slate-500 mt-0.5">% Kehadiran Saya</p>
             </div>
           </div>
 
@@ -273,9 +300,9 @@
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
                   <div class="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
-                  <h3 class="text-sm font-bold text-slate-800">Jadwal Sesi Pembelajaran</h3>
+                  <h3 id="dash-schedule-title" class="text-sm font-bold text-slate-800">Jadwal Perkuliahan Hari Ini</h3>
                 </div>
-                <span class="text-xs text-slate-400">Semester Berjalan</span>
+                <span class="text-xs text-slate-400">Semester 7 Ganjil</span>
               </div>
 
               <div id="dash-today-schedule" class="space-y-3">
@@ -283,13 +310,13 @@
               </div>
             </div>
 
-            <!-- Right: Tugas Mendatang (1 Col) -->
+            <!-- Right: Tugas Mendatang / Antrean Evaluasi (1 Col) -->
             <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-2">
                     <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                    <h3 class="text-sm font-bold text-slate-800">Tugas Terdekat</h3>
+                    <h3 id="dash-rightwidget-title" class="text-sm font-bold text-slate-800">Tugas Mendatang (Deadline)</h3>
                   </div>
                   <a href="#tugas" data-view-target="tugas" class="text-xs font-semibold text-indigo-600 hover:underline">Semua</a>
                 </div>
@@ -303,7 +330,7 @@
               <div class="mt-4 p-3.5 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-start gap-3">
                 <i class="bi bi-info-circle-fill text-indigo-600 text-base shrink-0 mt-0.5"></i>
                 <div class="text-[11px] text-indigo-900 leading-snug">
-                  <strong>Penyimpanan Lokal:</strong> Semua materi, tugas, kuis, absensi, dan nilai yang Anda input otomatis tersimpan di peramban (LocalStorage).
+                  <strong>Hak Akses Berbasis Peran:</strong> Gunakan tombol <em>"Ganti Role"</em> di sidebar untuk menguji alur kerja Dosen vs Mahasiswa.
                 </div>
               </div>
             </div>
@@ -317,14 +344,14 @@
           <!-- Header Bar with Filter & Search -->
           <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 class="text-lg font-bold text-slate-800">Katalog Materi Pembelajaran</h2>
-              <p class="text-xs text-slate-500">Unggah dan kelola modul dokumen PDF, rekaman video, atau slide materi kuliah/sekolah.</p>
+              <h2 class="text-lg font-bold text-slate-800">Bahan Ajar & Materi Pembelajaran</h2>
+              <p id="materi-header-desc" class="text-xs text-slate-500">Akses dan pelajari modul perkuliahan yang diunggah oleh dosen pengampu.</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
               <!-- Filter Mapel -->
               <select id="materi-filter-mapel" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="all">Semua Mata Pelajaran</option>
+                <option value="all">Semua Mata Kuliah</option>
               </select>
 
               <!-- Search -->
@@ -333,9 +360,9 @@
                 <input id="materi-search" type="text" placeholder="Cari judul materi..." class="pl-8 pr-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 w-44 md:w-56 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
 
-              <!-- Tambah Materi Action -->
-              <button onclick="openModalTambahMateri()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
-                <i class="bi bi-plus-lg"></i> Tambah Materi
+              <!-- Tambah Materi Action (DOSEN ONLY) -->
+              <button onclick="openModalTambahMateri()" class="guru-only hidden px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
+                <i class="bi bi-plus-lg"></i> Upload Materi Baru
               </button>
             </div>
           </div>
@@ -353,8 +380,8 @@
           <!-- Header Bar with Filter Tabs -->
           <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 class="text-lg font-bold text-slate-800">Daftar Tugas & Evaluasi</h2>
-              <p class="text-xs text-slate-500">Input tugas baru atau kumpulkan berkas jawaban dan berikan evaluasi nilai.</p>
+              <h2 class="text-lg font-bold text-slate-800">Tugas & Evaluasi Akademik</h2>
+              <p id="tugas-header-desc" class="text-xs text-slate-500">Kelola dan kumpulkan berkas jawaban penugasan kuliah.</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
@@ -364,7 +391,7 @@
                   Semua
                 </button>
                 <button data-tugas-tab="pending" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition shrink-0">
-                  Belum Selesai
+                  Belum Dikerjakan
                 </button>
                 <button data-tugas-tab="submitted" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition shrink-0">
                   Sudah Dikumpulkan
@@ -374,9 +401,9 @@
                 </button>
               </div>
 
-              <!-- Button Tambah Tugas -->
-              <button onclick="openModalTambahTugas()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
-                <i class="bi bi-plus-lg"></i> Tambah Tugas
+              <!-- Button Tambah Tugas (DOSEN ONLY) -->
+              <button onclick="openModalTambahTugas()" class="guru-only hidden px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
+                <i class="bi bi-plus-lg"></i> Buat Tugas Baru
               </button>
             </div>
           </div>
@@ -393,11 +420,12 @@
         <section id="view-kuis" class="app-view hidden animate-fade-in space-y-6">
           <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 class="text-lg font-bold text-slate-800">Kuis & Uji Pemahaman Mandiri</h2>
-              <p class="text-xs text-slate-500">Buat kuis latihan mandiri dengan pilihan ganda, timer hitung mundur, dan pembahasan kunci jawaban.</p>
+              <h2 class="text-lg font-bold text-slate-800">Kuis & Uji Pemahaman</h2>
+              <p id="kuis-header-desc" class="text-xs text-slate-500">Kuis pilihan ganda berwaktu untuk latihan pemahaman mandiri.</p>
             </div>
 
-            <button onclick="openModalBuatKuis()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
+            <!-- Buat Kuis (DOSEN ONLY) -->
+            <button onclick="openModalBuatKuis()" class="guru-only hidden px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5">
               <i class="bi bi-plus-lg"></i> Buat Kuis Baru
             </button>
           </div>
@@ -411,24 +439,33 @@
              VIEW 5: PRESENSI & ABSENSI
              ========================================== -->
         <section id="view-absensi" class="app-view hidden animate-fade-in space-y-6">
-          <!-- Attendance Overview & Check-In Row -->
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Left: Check In Form -->
+            <!-- Left: Form Presensi -->
             <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
               <div class="flex items-center gap-2 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
                   <i class="bi bi-fingerprint"></i>
                 </div>
                 <div>
-                  <h3 class="text-sm font-bold text-slate-800">Formulir Presensi Hari Ini</h3>
-                  <p class="text-[11px] text-slate-400">Catat kehadiran kelas Anda</p>
+                  <h3 id="absensi-form-title" class="text-sm font-bold text-slate-800">Formulir Presensi Hari Ini</h3>
+                  <p id="absensi-form-desc" class="text-[11px] text-slate-400">Konfirmasi kehadiran kelas Anda</p>
                 </div>
               </div>
 
               <form onsubmit="submitAbsensiHariIni(event)" class="space-y-4">
+                <!-- Dropdown Mahasiswa (DOSEN ONLY) -->
+                <div id="absensi-mhs-select-group" class="guru-only hidden">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Mahasiswa</label>
+                  <select id="absen-student-select" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="Budi Pratama (NIM: 2024001)">Budi Pratama (NIM: 2024001)</option>
+                    <option value="Siti Nurhaliza (NIM: 2024002)">Siti Nurhaliza (NIM: 2024002)</option>
+                    <option value="Ahmad Fauzan (NIM: 2024003)">Ahmad Fauzan (NIM: 2024003)</option>
+                  </select>
+                </div>
+
                 <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Kuliah</label>
                   <select id="absen-mapel" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <!-- Populated dynamically -->
                   </select>
@@ -464,12 +501,12 @@
                 </div>
 
                 <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Tambahan</label>
-                  <input type="text" id="absen-keterangan" placeholder="Contoh: Mengikuti sesi kelas tepat waktu..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan / Catatan</label>
+                  <input type="text" id="absen-keterangan" placeholder="Keterangan sesi kelas..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
-                  <i class="bi bi-check2"></i> Simpan Presensi Hari Ini
+                  <i class="bi bi-check2"></i> Simpan Catatan Presensi
                 </button>
               </form>
             </div>
@@ -477,7 +514,7 @@
             <!-- Right: Stats Summary & Percentage (2 Cols) -->
             <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
               <div>
-                <h3 class="text-sm font-bold text-slate-800 mb-4">Ringkasan Kehadiran Semester Ini</h3>
+                <h3 class="text-sm font-bold text-slate-800 mb-4">Rekapitulasi Kehadiran Semester Ini</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                   <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
                     <div id="absensi-stat-hadir" class="text-2xl font-extrabold text-emerald-700">0</div>
@@ -500,7 +537,7 @@
 
               <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <div class="text-xs font-semibold text-slate-700">Tingkat Persentase Kehadiran</div>
+                  <div id="absensi-rate-label" class="text-xs font-semibold text-slate-700">Tingkat Persentase Kehadiran</div>
                   <p class="text-[11px] text-slate-400">Minimal persentase kehadiran untuk mengikuti evaluasi akhir adalah 75%</p>
                 </div>
                 <div id="absensi-stat-rate" class="text-3xl font-extrabold text-indigo-600">0%</div>
@@ -512,15 +549,16 @@
           <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 class="text-sm font-bold text-slate-800">Riwayat Catatan Presensi</h3>
-              <span class="text-xs text-slate-400">Tersimpan otomatis</span>
+              <span class="text-xs text-slate-400">Tersimpan otomatis di sistem</span>
             </div>
 
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-100">
+                    <th class="py-3 px-4">Nama Mahasiswa</th>
                     <th class="py-3 px-4">Tanggal</th>
-                    <th class="py-3 px-4">Mata Pelajaran</th>
+                    <th class="py-3 px-4">Mata Kuliah</th>
                     <th class="py-3 px-4">Waktu</th>
                     <th class="py-3 px-4">Status</th>
                     <th class="py-3 px-4">Keterangan</th>
@@ -536,21 +574,21 @@
         </section>
 
         <!-- ==========================================
-             VIEW 6: REKAP NILAI & RAPOR
+             VIEW 6: REKAP NILAI / RAPOR
              ========================================== -->
         <section id="view-nilai" class="app-view hidden animate-fade-in space-y-6">
-          <!-- Student Academic Card -->
-          <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <!-- Student / Class Academic Card -->
+          <div id="nilai-student-banner" class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
               <div class="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-3xl font-bold">
                 <i class="bi bi-mortarboard-fill"></i>
               </div>
               <div>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700">
-                  Rapor Hasil Belajar Digital
+                <span id="rapor-badge-role" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700">
+                  Rapor Hasil Belajar Mahasiswa
                 </span>
-                <h2 id="rapor-student-name" class="text-xl font-extrabold text-slate-900 mt-1">Nama Mahasiswa / Siswa</h2>
-                <p id="rapor-student-info" class="text-xs text-slate-500">NIS/NIM • Kelas • Sekolah/Kampus</p>
+                <h2 id="rapor-student-name" class="text-xl font-extrabold text-slate-900 mt-1">Budi Pratama</h2>
+                <p id="rapor-student-info" class="text-xs text-slate-500">NIM: 2024001 • Semester 7 - TI • Fakultas Ilmu Komputer</p>
               </div>
             </div>
 
@@ -561,11 +599,12 @@
                 <div id="rapor-avg-grade" class="text-xs font-bold text-emerald-600">-</div>
               </div>
               <div class="flex flex-col gap-2">
-                <button onclick="openModalInputNilai()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 no-print">
-                  <i class="bi bi-plus-lg"></i> Input Nilai Baru
+                <!-- Input Nilai Mahasiswa (DOSEN ONLY) -->
+                <button id="btn-open-input-nilai" onclick="openModalInputNilai()" class="guru-only hidden px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 no-print">
+                  <i class="bi bi-plus-lg"></i> Input Nilai Mahasiswa
                 </button>
                 <button onclick="printRapor()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 no-print">
-                  <i class="bi bi-printer"></i> Cetak Rapor
+                  <i class="bi bi-printer"></i> Cetak Dokumen
                 </button>
               </div>
             </div>
@@ -575,17 +614,12 @@
           <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h3 class="text-sm font-bold text-slate-800">Transkrip Rekapitulasi Nilai</h3>
-                <p class="text-xs text-slate-400">Formula: Tugas (30%) + Kuis (20%) + UTS (25%) + UAS (25%)</p>
+                <h3 id="nilai-view-title" class="text-sm font-bold text-slate-800">Transkrip Nilai Akademik</h3>
+                <p id="nilai-view-desc" class="text-xs text-slate-400">Formula: Tugas (30%) + Kuis (20%) + UTS (25%) + UAS (25%)</p>
               </div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
-                  Standar KKM: 75
-                </span>
-                <button onclick="openModalInputNilai()" class="text-xs font-bold text-indigo-600 hover:underline">
-                  + Tambah Mata Kuliah
-                </button>
-              </div>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                Standar KKM: 75
+              </span>
             </div>
 
             <div class="overflow-x-auto">
@@ -593,7 +627,8 @@
                 <thead>
                   <tr class="bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-100">
                     <th class="py-3 px-3 text-center w-12">No</th>
-                    <th class="py-3 px-4">Mata Pelajaran & Dosen/Guru</th>
+                    <th class="guru-only hidden py-3 px-4">Nama Mahasiswa</th>
+                    <th class="py-3 px-4">Mata Kuliah & Dosen</th>
                     <th class="py-3 px-3 text-center">KKM</th>
                     <th class="py-3 px-3 text-center">Tugas (30%)</th>
                     <th class="py-3 px-3 text-center">Kuis (20%)</th>
@@ -602,7 +637,7 @@
                     <th class="py-3 px-3 text-center bg-indigo-50/40 text-indigo-900">Nilai Akhir</th>
                     <th class="py-3 px-3 text-center">Predikat</th>
                     <th class="py-3 px-3 text-center">Status</th>
-                    <th class="py-3 px-2 text-right">Aksi</th>
+                    <th class="guru-only hidden py-3 px-2 text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="nilai-table-body">
@@ -626,9 +661,9 @@
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex items-start justify-between pb-3 border-b border-slate-100">
         <div>
-          <span id="preview-materi-mapel" class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Mata Pelajaran</span>
+          <span id="preview-materi-mapel" class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Mata Kuliah</span>
           <h3 id="preview-materi-title" class="text-lg font-bold text-slate-800">Judul Materi</h3>
-          <p id="preview-materi-author" class="text-xs text-slate-400">Diupload oleh: Guru</p>
+          <p id="preview-materi-author" class="text-xs text-slate-400">Diupload oleh: Dosen</p>
         </div>
         <button onclick="closePreviewMateri()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
           <i class="bi bi-x-lg text-lg"></i>
@@ -647,11 +682,11 @@
     </div>
   </div>
 
-  <!-- Modal 2: Tambah Materi Baru -->
+  <!-- Modal 2: Tambah Materi Baru (DOSEN) -->
   <div id="modal-tambah-materi" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-800">Tambah Bahan Ajar / Modul Baru</h3>
+        <h3 class="text-base font-bold text-slate-800">Upload Modul / Bahan Ajar Baru</h3>
         <button onclick="closeModalTambahMateri()" class="p-2 text-slate-400 hover:text-slate-600">
           <i class="bi bi-x-lg"></i>
         </button>
@@ -659,14 +694,14 @@
 
       <form onsubmit="submitTambahMateri(event)" class="py-4 space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Kuliah</label>
           <select id="tambah-materi-mapel" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white">
-            <option value="">Pilih Mata Pelajaran</option>
+            <option value="">Pilih Mata Kuliah</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Tipe Materi</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Tipe Bahan Ajar</label>
           <select id="tambah-materi-type" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white">
             <option value="PDF">Dokumen Digital (PDF)</option>
             <option value="VIDEO">Video Pembelajaran (MP4 / YouTube)</option>
@@ -676,12 +711,12 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Materi</label>
-          <input id="tambah-materi-title" type="text" placeholder="Contoh: Pertemuan 1 - Konsep Dasar Database" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
+          <input id="tambah-materi-title" type="text" placeholder="Contoh: Modul 1: Manajemen Ruang Lingkup Proyek" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi Singkat & Ringkasan</label>
-          <textarea id="tambah-materi-desc" rows="3" placeholder="Tuliskan petunjuk pembelajaran atau pokok bahasan..." required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi & Pokok Bahasan</label>
+          <textarea id="tambah-materi-desc" rows="3" placeholder="Tuliskan petunjuk pembelajaran bagi mahasiswa..." required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
@@ -689,18 +724,18 @@
             Batal
           </button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm">
-            Simpan Materi
+            Publikasikan Materi
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 3: Tambah Tugas Baru (User Input) -->
+  <!-- Modal 3: Tambah Tugas Baru (DOSEN) -->
   <div id="modal-tambah-tugas" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-800">Buat / Tambah Tugas Baru</h3>
+        <h3 class="text-base font-bold text-slate-800">Buat Penugasan Kuliah Baru</h3>
         <button onclick="closeModalTambahTugas()" class="p-2 text-slate-400 hover:text-slate-600">
           <i class="bi bi-x-lg"></i>
         </button>
@@ -708,15 +743,15 @@
 
       <form onsubmit="submitTambahTugas(event)" class="py-4 space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Kuliah</label>
           <select id="tambah-tugas-mapel" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white">
-            <option value="">Pilih Mata Pelajaran</option>
+            <option value="">Pilih Mata Kuliah</option>
           </select>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Tugas</label>
-          <input id="tambah-tugas-title" type="text" placeholder="Contoh: Tugas 1: Desain Basis Data E-Commerce" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
+          <input id="tambah-tugas-title" type="text" placeholder="Contoh: Tugas 1: Membuat Work Breakdown Structure (WBS)" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div>
@@ -726,7 +761,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Petunjuk & Instruksi Pengerjaan</label>
-          <textarea id="tambah-tugas-desc" rows="3" placeholder="Tuliskan petunjuk pengerjaan tugas secara rinci..." required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
+          <textarea id="tambah-tugas-desc" rows="3" placeholder="Tuliskan petunjuk pengerjaan dan format file yang diwajibkan..." required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
@@ -734,19 +769,19 @@
             Batal
           </button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm">
-            Buat Tugas Baru
+            Terbitkan Tugas
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 4: Kumpulkan Tugas (Siswa) -->
+  <!-- Modal 4: Kumpulkan Tugas (MAHASISWA) -->
   <div id="modal-submit-tugas" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div>
-          <span id="submit-tugas-mapel" class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Mata Pelajaran</span>
+          <span id="submit-tugas-mapel" class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Mata Kuliah</span>
           <h3 id="submit-tugas-title" class="text-base font-bold text-slate-800">Judul Tugas</h3>
         </div>
         <button onclick="closeModalSubmitTugas()" class="p-2 text-slate-400 hover:text-slate-600">
@@ -768,7 +803,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Tambahan untuk Pengajar (Opsional)</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan untuk Dosen Pengampu (Opsional)</label>
           <textarea id="submit-tugas-note" rows="2" placeholder="Catatan hasil pengerjaan..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
         </div>
 
@@ -784,13 +819,13 @@
     </div>
   </div>
 
-  <!-- Modal 5: Evaluasi Nilai Tugas (Guru) -->
+  <!-- Modal 5: Evaluasi Nilai Tugas (DOSEN) -->
   <div id="modal-nilai-guru" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div>
-          <h3 class="text-base font-bold text-slate-800">Evaluasi & Penilaian Tugas</h3>
-          <p id="nilai-guru-student" class="text-xs text-indigo-600 font-semibold">Siswa / Mahasiswa</p>
+          <h3 class="text-base font-bold text-slate-800">Evaluasi & Penilaian Tugas Mahasiswa</h3>
+          <p id="nilai-guru-student" class="text-xs text-indigo-600 font-semibold">Mahasiswa: Budi Pratama</p>
         </div>
         <button onclick="closeModalNilaiGuru()" class="p-2 text-slate-400 hover:text-slate-600">
           <i class="bi bi-x-lg"></i>
@@ -816,12 +851,12 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Input Nilai (Skala 0 - 100)</label>
-          <input id="nilai-guru-score" type="number" min="0" max="100" placeholder="Contoh: 90" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-indigo-700">
+          <input id="nilai-guru-score" type="number" min="0" max="100" placeholder="Contoh: 92" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-indigo-700">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Masukan & Catatan Evaluasi Pengajar</label>
-          <textarea id="nilai-guru-feedback" rows="2" placeholder="Tuliskan catatan evaluasi..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Masukan & Catatan Evaluasi Dosen</label>
+          <textarea id="nilai-guru-feedback" rows="2" placeholder="Tuliskan masukan untuk peningkatan kualitas tugas mahasiswa..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700"></textarea>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
@@ -829,18 +864,18 @@
             Batal
           </button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-sm">
-            Simpan Nilai
+            Simpan Nilai & Sinkronkan
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal 6: Buat Kuis Baru (User Input) -->
+  <!-- Modal 6: Buat Kuis Baru (DOSEN) -->
   <div id="modal-buat-kuis" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-800">Buat Kuis Pilihan Ganda Baru</h3>
+        <h3 class="text-base font-bold text-slate-800">Rancang Kuis Pilihan Ganda Baru</h3>
         <button onclick="closeModalBuatKuis()" class="p-2 text-slate-400 hover:text-slate-600">
           <i class="bi bi-x-lg"></i>
         </button>
@@ -849,7 +884,7 @@
       <form onsubmit="submitBuatKuis(event)" class="py-4 space-y-4 overflow-y-auto flex-1 pr-1">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Kuliah</label>
             <select id="buat-kuis-mapel" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white">
               <!-- Populated dynamically -->
             </select>
@@ -862,7 +897,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Kuis</label>
-          <input id="buat-kuis-title" type="text" placeholder="Contoh: Kuis 1: Pengenalan HTML & CSS" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
+          <input id="buat-kuis-title" type="text" placeholder="Contoh: Kuis 1: Metodologi Waterfall & Agile" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <!-- Soal 1 -->
@@ -935,7 +970,7 @@
     </div>
   </div>
 
-  <!-- Modal 7: Interactive Quiz Runner Engine -->
+  <!-- Modal 7: Interactive Quiz Runner (MAHASISWA) -->
   <div id="modal-quiz-runner" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[92vh]">
       
@@ -991,14 +1026,14 @@
         <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-2">
           <i class="bi bi-trophy-fill"></i>
         </div>
-        <h3 class="text-lg font-bold text-slate-800">Kuis Selesai!</h3>
+        <h3 class="text-lg font-bold text-slate-800">Evaluasi Kuis</h3>
         <p id="result-quiz-title" class="text-xs text-slate-500">Judul Kuis</p>
       </div>
 
       <div class="py-4 text-center">
-        <div class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-1">Skor Akhir Anda</div>
+        <div class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-1">Hasil Perolehan</div>
         <div id="result-score-val" class="text-5xl font-extrabold text-emerald-600">100</div>
-        <p id="result-correct-info" class="text-xs text-slate-500 font-semibold mt-1">Semua Soal Terjawab</p>
+        <p id="result-correct-info" class="text-xs text-slate-500 font-semibold mt-1">Hasil Kuis</p>
       </div>
 
       <!-- Detailed Review -->
@@ -1008,17 +1043,17 @@
 
       <div class="pt-4 border-t border-slate-100 flex justify-end">
         <button onclick="closeQuizResult()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm">
-          Kembali ke Daftar Kuis
+          Tutup Jendela
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal 9: Input Nilai Mata Pelajaran Baru (Rapor) -->
+  <!-- Modal 9: Input Nilai Mahasiswa (DOSEN ONLY) -->
   <div id="modal-input-nilai" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-800">Input Nilai Mata Pelajaran / Kuliah</h3>
+        <h3 class="text-base font-bold text-slate-800">Input Nilai Akademik Mahasiswa</h3>
         <button onclick="closeModalInputNilai()" class="p-2 text-slate-400 hover:text-slate-600">
           <i class="bi bi-x-lg"></i>
         </button>
@@ -1026,30 +1061,33 @@
 
       <form onsubmit="submitInputNilai(event)" class="py-4 space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Mata Pelajaran (Atau ketik baru di bawah)</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Mahasiswa</label>
+          <select id="input-nilai-mhs-select" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white">
+            <option value="Budi Pratama (NIM: 2024001)">Budi Pratama (NIM: 2024001)</option>
+            <option value="Siti Nurhaliza (NIM: 2024002)">Siti Nurhaliza (NIM: 2024002)</option>
+            <option value="Ahmad Fauzan (NIM: 2024003)">Ahmad Fauzan (NIM: 2024003)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Kuliah</label>
           <select id="input-nilai-mapel" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white">
             <!-- Populated dynamically -->
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Mata Pelajaran Kustom (Jika tidak ada di daftar)</label>
-          <input id="input-nilai-mapel-custom" type="text" placeholder="Contoh: Pemrograman Mobile / Basis Data" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Mata Kuliah Baru (Opsional)</label>
+          <input id="input-nilai-mapel-custom" type="text" placeholder="Contoh: Pemrograman Mobile / Basis Data Lanjut" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Guru / Dosen</label>
-            <input id="input-nilai-guru" type="text" placeholder="Nama pengampu..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Standar KKM</label>
-            <input id="input-nilai-kkm" type="number" value="75" min="50" max="100" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
-          </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Standar KKM</label>
+          <input id="input-nilai-kkm" type="number" value="75" min="50" max="100" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-          <span class="text-xs font-bold text-slate-700 block">Komponen Nilai (0 - 100):</span>
+          <span class="text-xs font-bold text-slate-700 block">Komponen Nilai Mahasiswa (0 - 100):</span>
           <div class="grid grid-cols-4 gap-2 text-xs">
             <div>
               <label class="text-[11px] text-slate-500 font-semibold block mb-1">Tugas (30%)</label>
@@ -1075,7 +1113,7 @@
             Batal
           </button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm">
-            Simpan Nilai ke Rapor
+            Simpan ke Buku Nilai
           </button>
         </div>
       </form>
@@ -1086,7 +1124,7 @@
   <div id="modal-edit-profil" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden modal-backdrop">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-800">Personalisasi Profil Anda</h3>
+        <h3 class="text-base font-bold text-slate-800">Personalisasi Profil Pengguna</h3>
         <button onclick="closeModalEditProfil()" class="p-2 text-slate-400 hover:text-slate-600">
           <i class="bi bi-x-lg"></i>
         </button>
@@ -1094,23 +1132,23 @@
 
       <form onsubmit="saveEditProfil(event)" class="py-4 space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap Anda</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
           <input id="edit-profil-name" type="text" placeholder="Nama Anda..." required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Induk (NIS / NIM)</label>
-          <input id="edit-profil-nis" type="text" placeholder="Contoh: 20240001" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Induk (NIM / NIP)</label>
+          <input id="edit-profil-nis" type="text" placeholder="Contoh: 2024001" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Kelas / Jurusan</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Kelas / Bidang Keahlian</label>
           <input id="edit-profil-kelas" type="text" placeholder="Contoh: Semester 7 - Teknik Informatika" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Sekolah / Universitas</label>
-          <input id="edit-profil-sekolah" type="text" placeholder="Contoh: Universitas / SMA Saya" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Fakultas / Institusi</label>
+          <input id="edit-profil-sekolah" type="text" placeholder="Contoh: Fakultas Ilmu Komputer" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700">
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">

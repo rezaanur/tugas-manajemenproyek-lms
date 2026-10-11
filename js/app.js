@@ -1,17 +1,19 @@
 /**
  * Core Application Logic for EduSmart LMS
- * Clean State Architecture: User-input friendly with LocalStorage persistence
+ * True Role-Based Access Control (RBAC):
+ * - DOSEN / GURU: Kelola materi, buat tugas, evaluasi tugas & beri nilai, buat kuis, catat presensi kelas, kelola buku nilai (gradebook).
+ * - MAHASISWA / SISWA: Akses materi, kumpulkan tugas, kerjakan kuis berwaktu, presensi mandiri, lihat transkrip rapor sendiri.
  */
 
-// Storage keys (v2 clean storage without mock clutter)
+// Storage keys
 const STORAGE_KEYS = {
-  CURRENT_USER: 'edusmart_clean_user',
-  MAPEL: 'edusmart_clean_mapel',
-  MATERI: 'edusmart_clean_materi',
-  TUGAS: 'edusmart_clean_tugas',
-  KUIS: 'edusmart_clean_kuis',
-  ABSENSI: 'edusmart_clean_absensi',
-  NILAI: 'edusmart_clean_nilai'
+  CURRENT_USER: 'edusmart_v3_user',
+  MAPEL: 'edusmart_v3_mapel',
+  MATERI: 'edusmart_v3_materi',
+  TUGAS: 'edusmart_v3_tugas',
+  KUIS: 'edusmart_v3_kuis',
+  ABSENSI: 'edusmart_v3_absensi',
+  NILAI: 'edusmart_v3_nilai'
 };
 
 // Global App State
@@ -84,7 +86,7 @@ function showToast(message, type = 'success') {
   }, 3500);
 }
 
-// Init State from Storage or Defaults (Clean empty arrays)
+// Init State from Storage or Defaults
 function initAppState() {
   state.mapel = loadStorage(STORAGE_KEYS.MAPEL, DEFAULT_MAPEL);
   state.materi = loadStorage(STORAGE_KEYS.MATERI, DEFAULT_MATERI);
@@ -94,7 +96,7 @@ function initAppState() {
   state.nilai = loadStorage(STORAGE_KEYS.NILAI, DEFAULT_NILAI);
   
   const savedUser = loadStorage(STORAGE_KEYS.CURRENT_USER, null);
-  state.currentUser = savedUser || DEFAULT_USERS[0];
+  state.currentUser = savedUser || DEFAULT_USERS[0]; // Default Mahasiswa Budi
 }
 
 // Persist All Collections
@@ -142,23 +144,19 @@ function setupEventListeners() {
   // Mobile Sidebar Toggle
   const sidebarBtn = document.getElementById('btn-toggle-sidebar');
   const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-  if (sidebarBtn) {
-    sidebarBtn.addEventListener('click', toggleMobileSidebar);
-  }
-  if (sidebarBackdrop) {
-    sidebarBackdrop.addEventListener('click', closeMobileSidebar);
-  }
+  if (sidebarBtn) sidebarBtn.addEventListener('click', toggleMobileSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeMobileSidebar);
 
   // Quick Role Switcher
   const btnSwitchRole = document.getElementById('btn-switch-role');
   if (btnSwitchRole) {
     btnSwitchRole.addEventListener('click', () => {
       if (state.currentUser.role === 'siswa') {
-        state.currentUser = DEFAULT_USERS[1]; // Switch to Guru
-        showToast('Beralih ke mode akun: Guru / Dosen Pengajar', 'info');
+        state.currentUser = DEFAULT_USERS[1]; // Switch to Dosen
+        showToast('Beralih ke mode: Dosen / Guru Pengajar (Dr. Siti Aminah, M.Kom)', 'info');
       } else {
-        state.currentUser = DEFAULT_USERS[0]; // Switch to Siswa
-        showToast('Beralih ke mode akun: Siswa / Mahasiswa', 'info');
+        state.currentUser = DEFAULT_USERS[0]; // Switch to Mahasiswa
+        showToast('Beralih ke mode: Mahasiswa / Siswa (Budi Pratama)', 'info');
       }
       saveStorage(STORAGE_KEYS.CURRENT_USER, state.currentUser);
       updateAuthUI();
@@ -188,7 +186,7 @@ function setupEventListeners() {
         persistAll();
         updateAuthUI();
         navigateTo('dashboard');
-        showToast('Semua data berhasil dibersihkan! Silakan input data baru Anda.', 'info');
+        showToast('Semua data berhasil dibersihkan!', 'info');
       }
     });
   }
@@ -218,22 +216,38 @@ function updateAuthUI() {
   const roleEl = document.getElementById('user-role-badge');
   const subInfoEl = document.getElementById('user-subinfo');
   const schoolEl = document.getElementById('school-display-name');
+  const headerRolePill = document.getElementById('header-role-pill');
+  const btnSwitchRoleText = document.getElementById('btn-switch-role-text');
 
   if (avatarEl) avatarEl.src = state.currentUser.avatar;
   if (nameEl) nameEl.textContent = state.currentUser.name;
   if (schoolEl && state.currentUser.sekolah) schoolEl.textContent = state.currentUser.sekolah;
 
   if (roleEl) {
-    roleEl.textContent = isGuru ? 'Guru / Dosen' : 'Siswa / Mahasiswa';
+    roleEl.textContent = isGuru ? 'Dosen / Guru Pengajar' : 'Mahasiswa / Siswa';
     roleEl.className = isGuru 
       ? 'px-2 py-0.5 text-xs font-semibold rounded-full bg-violet-100 text-violet-700'
       : 'px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700';
   }
+
   if (subInfoEl) {
-    subInfoEl.textContent = isGuru ? `NIP: ${state.currentUser.nip || '-'}` : `${state.currentUser.kelas} • NIS/NIM: ${state.currentUser.nis}`;
+    subInfoEl.textContent = isGuru 
+      ? `NIP: ${state.currentUser.nip || '-'}` 
+      : `${state.currentUser.kelas || 'Semester 7'} • NIM: ${state.currentUser.nis}`;
   }
 
-  // Toggle role-specific action buttons visibility
+  if (headerRolePill) {
+    headerRolePill.textContent = isGuru ? 'Mode: Dosen' : 'Mode: Mahasiswa';
+    headerRolePill.className = isGuru
+      ? 'px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-800 border border-violet-200'
+      : 'px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200';
+  }
+
+  if (btnSwitchRoleText) {
+    btnSwitchRoleText.textContent = isGuru ? 'Ganti ke Mahasiswa' : 'Ganti ke Dosen';
+  }
+
+  // Toggle role-specific action elements visibility
   document.querySelectorAll('.guru-only').forEach(el => {
     if (isGuru) el.classList.remove('hidden');
     else el.classList.add('hidden');
@@ -254,9 +268,7 @@ function navigateTo(viewId) {
   });
 
   const targetView = document.getElementById(`view-${viewId}`);
-  if (targetView) {
-    targetView.classList.remove('hidden');
-  }
+  if (targetView) targetView.classList.remove('hidden');
 
   // Update navigation active states
   document.querySelectorAll('[data-view-target]').forEach(link => {
@@ -274,13 +286,14 @@ function navigateTo(viewId) {
 
   // Breadcrumb / Title
   const breadcrumb = document.getElementById('view-title-breadcrumb');
+  const isGuru = state.currentUser.role === 'guru';
   const titles = {
-    dashboard: 'Dashboard Utama',
-    materi: 'Materi Pembelajaran',
-    tugas: 'Tugas & Evaluasi',
-    kuis: 'Kuis & Latihan Soal',
-    absensi: 'Presensi & Kehadiran',
-    nilai: 'Rekap Nilai / Rapor'
+    dashboard: isGuru ? 'Dashboard Dosen' : 'Dashboard Mahasiswa',
+    materi: isGuru ? 'Manajemen Bahan Ajar' : 'Materi Pembelajaran',
+    tugas: isGuru ? 'Evaluasi Tugas Mahasiswa' : 'Tugas Kuliah Saya',
+    kuis: isGuru ? 'Bank Kuis & Soal' : 'Kuis Interaktif',
+    absensi: isGuru ? 'Rekapitulasi Presensi Kelas' : 'Presensi Mandiri',
+    nilai: isGuru ? 'Buku Nilai (Gradebook) Kelas' : 'Transkrip Nilai / Rapor'
   };
   if (breadcrumb) {
     breadcrumb.textContent = titles[viewId] || 'EduSmart LMS';
@@ -309,7 +322,7 @@ function navigateTo(viewId) {
 }
 
 // -------------------------------------------------------------
-// 1. DASHBOARD VIEW
+// 1. DASHBOARD VIEW (Distinct Role Perspectives)
 // -------------------------------------------------------------
 function renderDashboard() {
   const isGuru = state.currentUser.role === 'guru';
@@ -318,71 +331,89 @@ function renderDashboard() {
   if (greetingEl) greetingEl.textContent = state.currentUser.name;
 
   const greetingRoleEl = document.getElementById('dash-greeting-role');
-  if (greetingRoleEl) greetingRoleEl.textContent = isGuru ? 'Panel Guru / Dosen' : 'Portal Pembelajaran Siswa / Mahasiswa';
+  const greetingDescEl = document.getElementById('dash-greeting-desc');
 
-  // Stat Counters
-  const countMateri = state.materi.length;
-  const countTugas = isGuru 
-    ? state.tugas.length 
-    : state.tugas.filter(t => t.status === 'Belum Selesai').length;
-  
-  // Calculate average grade
-  let avgNilai = '0';
-  if (state.nilai.length > 0) {
-    const totalNilaiAkhir = state.nilai.reduce((acc, curr) => {
-      const na = (curr.tugas * 0.3) + (curr.kuis * 0.2) + (curr.uts * 0.25) + (curr.uas * 0.25);
-      return acc + na;
-    }, 0);
-    avgNilai = (totalNilaiAkhir / state.nilai.length).toFixed(1);
+  if (greetingRoleEl) {
+    greetingRoleEl.textContent = isGuru ? 'Panel Dosen / Guru Pengajar' : 'Portal Mahasiswa / Siswa';
   }
 
-  // Calculate attendance rate
-  let attendanceRate = 0;
-  if (state.absensi.length > 0) {
-    const hadirCount = state.absensi.filter(a => a.status === 'Hadir').length;
-    attendanceRate = Math.round((hadirCount / state.absensi.length) * 100);
+  if (greetingDescEl) {
+    greetingDescEl.textContent = isGuru
+      ? 'Kelola perkuliahan Anda: upload bahan ajar, buat tugas & kuis, evaluasi kiriman mahasiswa, serta pantau rekapitulasi nilai kelas.'
+      : 'Portal pembelajaran aktif. Pelajari modul, kumpulkan tugas sebelum batas waktu, kerjakan kuis berwaktu, dan catat presensi mandiri.';
   }
 
-  document.getElementById('stat-materi-count').textContent = countMateri;
-  document.getElementById('stat-tugas-count').textContent = countTugas;
-  document.getElementById('stat-tugas-label').textContent = isGuru ? 'Total Tugas Aktif' : 'Tugas Perlu Dikerjakan';
-  document.getElementById('stat-nilai-avg').textContent = avgNilai;
-  document.getElementById('stat-absensi-rate').textContent = `${attendanceRate}%`;
+  // Stat Counters based on Role
+  if (isGuru) {
+    // Dosen stats
+    const tugasNeedGrading = state.tugas.filter(t => t.status === 'Sudah Dikumpulkan').length;
+    document.getElementById('stat-card1-title').textContent = 'Bahan Ajar Diunggah';
+    document.getElementById('stat-card1-val').textContent = state.materi.length;
+    
+    document.getElementById('stat-card2-title').textContent = 'Tugas Perlu Dinilai';
+    document.getElementById('stat-card2-val').textContent = tugasNeedGrading;
 
-  // Upcoming Tasks Widget
-  const upcomingTugasContainer = document.getElementById('dash-upcoming-tugas');
-  if (upcomingTugasContainer) {
-    if (state.tugas.length === 0) {
-      upcomingTugasContainer.innerHTML = `
-        <div class="py-6 text-center">
-          <i class="bi bi-inbox text-3xl text-slate-300 mb-1 block"></i>
-          <p class="text-xs text-slate-400">Belum ada tugas.</p>
-          <button onclick="openModalTambahTugas()" class="mt-2 text-xs font-semibold text-indigo-600 hover:underline">
-            + Tambah Tugas Baru
-          </button>
-        </div>
-      `;
+    document.getElementById('stat-card3-title').textContent = 'Kuis Aktif Dibuat';
+    document.getElementById('stat-card3-val').textContent = state.kuis.length;
+
+    let avgNilai = '0';
+    if (state.nilai.length > 0) {
+      const total = state.nilai.reduce((acc, curr) => acc + ((curr.tugas * 0.3) + (curr.kuis * 0.2) + (curr.uts * 0.25) + (curr.uas * 0.25)), 0);
+      avgNilai = (total / state.nilai.length).toFixed(1);
+    }
+    document.getElementById('stat-card4-title').textContent = 'Rata-rata Nilai Kelas';
+    document.getElementById('stat-card4-val').textContent = avgNilai;
+  } else {
+    // Mahasiswa stats
+    const tugasPending = state.tugas.filter(t => t.status === 'Belum Selesai').length;
+    document.getElementById('stat-card1-title').textContent = 'Materi Tersedia';
+    document.getElementById('stat-card1-val').textContent = state.materi.length;
+    
+    document.getElementById('stat-card2-title').textContent = 'Tugas Perlu Dikerjakan';
+    document.getElementById('stat-card2-val').textContent = tugasPending;
+
+    let avgNilai = '0';
+    if (state.nilai.length > 0) {
+      const total = state.nilai.reduce((acc, curr) => acc + ((curr.tugas * 0.3) + (curr.kuis * 0.2) + (curr.uts * 0.25) + (curr.uas * 0.25)), 0);
+      avgNilai = (total / state.nilai.length).toFixed(1);
+    }
+    document.getElementById('stat-card3-title').textContent = 'Rata-rata Rapor Saya';
+    document.getElementById('stat-card3-val').textContent = avgNilai;
+
+    let attendanceRate = 0;
+    if (state.absensi.length > 0) {
+      const hadirCount = state.absensi.filter(a => a.status === 'Hadir').length;
+      attendanceRate = Math.round((hadirCount / state.absensi.length) * 100);
+    }
+    document.getElementById('stat-card4-title').textContent = '% Kehadiran Saya';
+    document.getElementById('stat-card4-val').textContent = `${attendanceRate}%`;
+  }
+
+  // Dashboard Section Titles
+  document.getElementById('dash-schedule-title').textContent = isGuru ? 'Jadwal Mengajar Anda' : 'Jadwal Perkuliahan Hari Ini';
+  document.getElementById('dash-rightwidget-title').textContent = isGuru ? 'Antrean Evaluasi Tugas Masuk' : 'Tugas Mendatang (Deadline)';
+
+  // Left Schedule Widget
+  const scheduleContainer = document.getElementById('dash-today-schedule');
+  if (scheduleContainer) {
+    if (state.mapel.length === 0) {
+      scheduleContainer.innerHTML = `<div class="py-8 text-center text-xs text-slate-400">Belum ada jadwal mata kuliah yang terjadwal.</div>`;
     } else {
-      const upcoming = state.tugas.slice(0, 3);
-      upcomingTugasContainer.innerHTML = upcoming.map(t => {
-        const badgeColors = {
-          'Belum Selesai': 'bg-amber-100 text-amber-700',
-          'Sudah Dikumpulkan': 'bg-blue-100 text-blue-700',
-          'Dinilai': 'bg-emerald-100 text-emerald-700'
-        };
+      scheduleContainer.innerHTML = state.mapel.slice(0, 3).map((item, idx) => {
+        const times = ['08:00 - 09:30 WIB', '09:45 - 11:15 WIB', '13:00 - 14:30 WIB'];
         return `
-          <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:shadow-sm transition">
-            <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 text-sm font-bold">
-                <i class="bi bi-journal-text"></i>
+          <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <div class="px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold text-center leading-tight">
+                ${times[idx] || '08:00 WIB'}
               </div>
               <div>
-                <h4 class="text-sm font-semibold text-slate-800 line-clamp-1">${t.title}</h4>
-                <p class="text-xs text-slate-500">${t.mapelName} • Batas: ${formatDateTime(t.deadline)}</p>
+                <div class="text-sm font-bold text-slate-800">${item.name}</div>
+                <div class="text-xs text-slate-400">${isGuru ? 'Ruang Lab Komputer 2' : (item.guru || 'Dosen Pengampu')}</div>
               </div>
             </div>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColors[t.status] || 'bg-slate-100 text-slate-600'}">
-              ${t.status}
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
+              ${isGuru ? 'Sesi Mengajar' : 'Sesi Kelas'}
             </span>
           </div>
         `;
@@ -390,35 +421,49 @@ function renderDashboard() {
     }
   }
 
-  // Today's schedule widget
-  const scheduleContainer = document.getElementById('dash-today-schedule');
-  if (scheduleContainer) {
-    if (state.mapel.length === 0) {
-      scheduleContainer.innerHTML = `
-        <div class="py-8 text-center text-xs text-slate-400">
-          Belum ada jadwal mata pelajaran. Tambahkan mata pelajaran untuk memulai.
-        </div>
-      `;
-    } else {
-      scheduleContainer.innerHTML = state.mapel.slice(0, 3).map((item, idx) => {
-        const times = ['08:00 - 09:30 WIB', '09:45 - 11:15 WIB', '12:30 - 14:00 WIB'];
-        return `
-          <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition">
-            <div class="flex items-center gap-3">
-              <div class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold text-center leading-tight">
-                ${times[idx] || '08:00 WIB'}
-              </div>
-              <div>
-                <div class="text-sm font-semibold text-slate-800">${item.name}</div>
-                <div class="text-xs text-slate-500">${item.guru || 'Dosen Pengampu'}</div>
-              </div>
-            </div>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-semibold">
-              Terjadwal
-            </span>
+  // Right Widget: Tugas
+  const rightContainer = document.getElementById('dash-upcoming-tugas');
+  if (rightContainer) {
+    if (isGuru) {
+      // Guru sees assignments awaiting grading
+      const needGrading = state.tugas.filter(t => t.status === 'Sudah Dikumpulkan');
+      if (needGrading.length === 0) {
+        rightContainer.innerHTML = `
+          <div class="py-6 text-center text-xs text-slate-400">
+            <i class="bi bi-check2-circle text-2xl text-emerald-500 mb-1 block"></i>
+            Tidak ada tugas mahasiswa yang menunggu evaluasi saat ini.
           </div>
         `;
-      }).join('');
+      } else {
+        rightContainer.innerHTML = needGrading.slice(0, 3).map(t => `
+          <div class="flex items-center justify-between p-3 rounded-xl border border-blue-100 bg-blue-50/40">
+            <div>
+              <h4 class="text-xs font-bold text-slate-800 line-clamp-1">${t.title}</h4>
+              <p class="text-[11px] text-slate-500">${t.mapelName} • Oleh: Budi Pratama</p>
+            </div>
+            <button onclick="openModalNilaiTugasGuru('${t.id}')" class="px-3 py-1 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 transition">
+              Beri Nilai
+            </button>
+          </div>
+        `).join('');
+      }
+    } else {
+      // Mahasiswa sees upcoming assignments
+      if (state.tugas.length === 0) {
+        rightContainer.innerHTML = `<div class="py-6 text-center text-xs text-slate-400">Belum ada tugas perkuliahan.</div>`;
+      } else {
+        rightContainer.innerHTML = state.tugas.slice(0, 3).map(t => `
+          <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/60">
+            <div>
+              <h4 class="text-xs font-bold text-slate-800 line-clamp-1">${t.title}</h4>
+              <p class="text-[11px] text-slate-500">Batas: ${formatDateTime(t.deadline)}</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${t.status === 'Belum Selesai' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+              ${t.status}
+            </span>
+          </div>
+        `).join('');
+      }
     }
   }
 }
@@ -430,10 +475,18 @@ function renderMateri() {
   const container = document.getElementById('materi-grid');
   const filterSelect = document.getElementById('materi-filter-mapel');
   const searchInput = document.getElementById('materi-search');
+  const isGuru = state.currentUser.role === 'guru';
 
-  // Populate filter mapel dropdown
+  // Role-based header description
+  const headerDesc = document.getElementById('materi-header-desc');
+  if (headerDesc) {
+    headerDesc.textContent = isGuru
+      ? 'Unggah modul bahan ajar (PDF), video pembelajaran, atau slide presentasi untuk dipelajari mahasiswa.'
+      : 'Akses dan pelajari modul perkuliahan yang diunggah oleh dosen pengampu.';
+  }
+
   if (filterSelect) {
-    filterSelect.innerHTML = '<option value="all">Semua Mata Pelajaran</option>';
+    filterSelect.innerHTML = '<option value="all">Semua Mata Kuliah</option>';
     state.mapel.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
@@ -459,10 +512,12 @@ function renderMateri() {
         <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200">
           <i class="bi bi-file-earmark-plus text-4xl text-slate-300 mb-2 block"></i>
           <h4 class="text-base font-semibold text-slate-700">Belum ada materi pembelajaran</h4>
-          <p class="text-xs text-slate-400 mb-4">Mulai isi materi modul dokumen (PDF), slide, atau video pembelajaran sendiri.</p>
-          <button onclick="openModalTambahMateri()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
-            <i class="bi bi-plus-lg"></i> Tambah Materi Sekarang
-          </button>
+          <p class="text-xs text-slate-400 mb-4">${isGuru ? 'Mulai upload materi modul dokumen (PDF), slide, atau video pembelajaran untuk mahasiswa.' : 'Dosen belum mengunggah materi untuk mata kuliah ini.'}</p>
+          ${isGuru ? `
+            <button onclick="openModalTambahMateri()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
+              <i class="bi bi-plus-lg"></i> Upload Materi Baru
+            </button>
+          ` : ''}
         </div>
       `;
       return;
@@ -499,19 +554,21 @@ function renderMateri() {
           <div class="pt-4 border-t border-slate-100">
             <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
               <span><i class="bi bi-person mr-1"></i>${m.author}</span>
-              <span><i class="bi bi-clock mr-1"></i>${m.size || 'Dokumen'}</span>
+              <span><i class="bi bi-clock mr-1"></i>${m.size || 'Modul'}</span>
             </div>
             
             <div class="flex items-center gap-2">
               <button onclick="openPreviewMateri('${m.id}')" class="flex-1 py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold transition flex items-center justify-center gap-1.5">
-                <i class="bi bi-eye"></i> Baca / Tonton
+                <i class="bi bi-eye"></i> ${isGuru ? 'Pratinjau' : 'Baca / Tonton'}
               </button>
               <button onclick="downloadSimulation('${m.title}')" class="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs transition" title="Unduh Berkas">
                 <i class="bi bi-download"></i>
               </button>
-              <button onclick="deleteMateri('${m.id}')" class="p-2 rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 text-xs transition" title="Hapus Materi">
-                <i class="bi bi-trash"></i>
-              </button>
+              ${isGuru ? `
+                <button onclick="deleteMateri('${m.id}')" class="p-2 rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 text-xs transition" title="Hapus Materi">
+                  <i class="bi bi-trash"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -558,7 +615,7 @@ window.openPreviewMateri = function(id) {
             <i class="bi bi-file-earmark-pdf"></i>
           </div>
           <h4 class="text-base font-bold text-slate-800 mb-1">${materi.title}</h4>
-          <p class="text-xs text-slate-500 mb-4">Format Dokumen digital siap dibaca (${materi.size || 'Modul'})</p>
+          <p class="text-xs text-slate-500 mb-4">Format Dokumen digital siap dibaca (${materi.size || 'Modul PDF'})</p>
           <div class="max-w-md mx-auto text-left text-xs bg-white p-4 rounded-lg border border-slate-200 text-slate-600 mb-4 leading-relaxed">
             <p class="font-semibold text-slate-700 mb-1">Ringkasan Dokumen:</p>
             ${materi.desc}
@@ -582,12 +639,12 @@ window.downloadSimulation = function(title) {
   showToast(`Mengunduh berkas: "${title}"...`, 'info');
 };
 
-// Modal Tambah Materi
+// Modal Tambah Materi (Guru)
 window.openModalTambahMateri = function() {
   const modal = document.getElementById('modal-tambah-materi');
   const select = document.getElementById('tambah-materi-mapel');
   if (select) {
-    select.innerHTML = '<option value="">Pilih Mata Pelajaran</option>';
+    select.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
     state.mapel.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
@@ -618,11 +675,11 @@ window.submitTambahMateri = function(e) {
   const newMateri = {
     id: 'mat-' + Date.now(),
     mapelId: mapelId,
-    mapelName: mapelObj ? mapelObj.name : 'Mata Pelajaran',
+    mapelName: mapelObj ? mapelObj.name : 'Mata Kuliah',
     title: title,
     desc: desc,
     type: type,
-    size: type === 'VIDEO' ? '15 Menit' : '2.4 MB',
+    size: type === 'VIDEO' ? '18 Menit' : '2.8 MB',
     date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
     author: state.currentUser.name,
     url: '#'
@@ -632,7 +689,7 @@ window.submitTambahMateri = function(e) {
   persistAll();
   closeModalTambahMateri();
   renderMateri();
-  showToast('Materi baru berhasil ditambahkan!');
+  showToast('Bahan ajar berhasil diunggah!');
 };
 
 window.deleteMateri = function(id) {
@@ -645,13 +702,20 @@ window.deleteMateri = function(id) {
 };
 
 // -------------------------------------------------------------
-// 3. TUGAS VIEW
+// 3. TUGAS VIEW (Dosen Evaluates vs Mahasiswa Submits)
 // -------------------------------------------------------------
 let currentTugasTab = 'all';
 
 function renderTugas() {
   const container = document.getElementById('tugas-list-container');
   const isGuru = state.currentUser.role === 'guru';
+
+  const headerDesc = document.getElementById('tugas-header-desc');
+  if (headerDesc) {
+    headerDesc.textContent = isGuru
+      ? 'Buat tugas baru, periksa kiriman berkas mahasiswa, dan berikan skor nilai serta masukan evaluasi.'
+      : 'Kumpulkan berkas jawaban tugas kuliah sebelum batas waktu pengumpulan.';
+  }
 
   document.querySelectorAll('[data-tugas-tab]').forEach(btn => {
     btn.onclick = () => {
@@ -678,11 +742,13 @@ function renderTugas() {
     container.innerHTML = `
       <div class="py-12 text-center bg-white rounded-2xl border border-slate-200">
         <i class="bi bi-journal-plus text-4xl text-slate-300 mb-2 block"></i>
-        <h4 class="text-base font-semibold text-slate-700">Belum ada tugas</h4>
-        <p class="text-xs text-slate-400 mb-4">Tambahkan tugas baru untuk menguji fitur pengumpulan dan penilaian tugas.</p>
-        <button onclick="openModalTambahTugas()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
-          <i class="bi bi-plus-lg"></i> Tambah Tugas Baru
-        </button>
+        <h4 class="text-base font-semibold text-slate-700">Belum ada tugas pada kategori ini</h4>
+        <p class="text-xs text-slate-400 mb-4">${isGuru ? 'Klik tombol di bawah untuk membuat penugasan kuliah baru bagi mahasiswa.' : 'Belum ada tugas yang perlu dikerjakan saat ini.'}</p>
+        ${isGuru ? `
+          <button onclick="openModalTambahTugas()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
+            <i class="bi bi-plus-lg"></i> Buat Tugas Baru
+          </button>
+        ` : ''}
       </div>
     `;
     return;
@@ -716,24 +782,26 @@ function renderTugas() {
           </div>
 
           <div class="flex items-center gap-2 shrink-0">
-            ${!isGuru ? `
+            ${isGuru ? `
+              <!-- DOSEN ACTIONS: Evaluasi & Hapus -->
+              <button onclick="openModalNilaiTugasGuru('${t.id}')" class="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                <i class="bi bi-pencil-square"></i> ${t.status === 'Dinilai' ? 'Perbarui Nilai' : 'Periksa & Beri Nilai'}
+              </button>
+              <button onclick="deleteTugas('${t.id}')" class="p-2.5 rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 text-xs transition" title="Hapus Tugas">
+                <i class="bi bi-trash"></i>
+              </button>
+            ` : `
+              <!-- MAHASISWA ACTIONS: Kumpulkan Jawaban -->
               ${t.status === 'Belum Selesai' ? `
                 <button onclick="openModalSubmitTugas('${t.id}')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
                   <i class="bi bi-upload"></i> Kumpulkan Tugas
                 </button>
               ` : `
                 <button onclick="openModalSubmitTugas('${t.id}')" class="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5">
-                  <i class="bi bi-eye"></i> Detail Pengumpulan
+                  <i class="bi bi-eye"></i> Detail Kiriman
                 </button>
               `}
-            ` : `
-              <button onclick="openModalNilaiTugasGuru('${t.id}')" class="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
-                <i class="bi bi-pencil-square"></i> Beri Nilai
-              </button>
             `}
-            <button onclick="deleteTugas('${t.id}')" class="p-2 rounded-xl border border-rose-200 text-rose-500 hover:bg-rose-50 text-xs transition" title="Hapus Tugas">
-              <i class="bi bi-trash"></i>
-            </button>
           </div>
         </div>
 
@@ -745,13 +813,13 @@ function renderTugas() {
                 <i class="bi bi-paperclip text-lg text-indigo-600"></i>
                 <div class="flex-1 truncate">
                   <div class="font-semibold text-slate-700 truncate">${t.submittedFile}</div>
-                  <div class="text-[11px] text-slate-400">Dikumpulkan pada: ${t.submittedAt || '-'}</div>
+                  <div class="text-[11px] text-slate-400">Pengirim: Budi Pratama • ${t.submittedAt || '-'}</div>
                 </div>
               </div>
             ` : ''}
             ${t.feedback ? `
               <div class="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800">
-                <span class="font-semibold">Catatan Guru:</span> ${t.feedback}
+                <span class="font-bold">Masukan Evaluasi Dosen:</span> ${t.feedback}
               </div>
             ` : ''}
           </div>
@@ -762,12 +830,12 @@ function renderTugas() {
               <span class="font-semibold text-rose-600">${formatDateTime(t.deadline)}</span>
             </div>
             <div class="flex items-center justify-between text-slate-500">
-              <span>Status:</span>
+              <span>Status Tugas:</span>
               <span class="font-semibold text-slate-700">${t.status}</span>
             </div>
             <div class="flex items-center justify-between text-slate-500">
               <span>Pengumpulan:</span>
-              <span class="font-semibold text-slate-700">${t.submittedAt ? 'Tepat Waktu' : 'Menunggu'}</span>
+              <span class="font-semibold text-slate-700">${t.submittedAt ? 'Tepat Waktu' : 'Belum Ada'}</span>
             </div>
           </div>
         </div>
@@ -776,12 +844,12 @@ function renderTugas() {
   }).join('');
 }
 
-// Modal Tambah Tugas Baru
+// Modal Tambah Tugas (Guru Only)
 window.openModalTambahTugas = function() {
   const modal = document.getElementById('modal-tambah-tugas');
   const select = document.getElementById('tambah-tugas-mapel');
   if (select) {
-    select.innerHTML = '<option value="">Pilih Mata Pelajaran</option>';
+    select.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
     state.mapel.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
@@ -790,7 +858,6 @@ window.openModalTambahTugas = function() {
     });
   }
 
-  // Set default deadline tomorrow
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 3);
   const deadlineInput = document.getElementById('tambah-tugas-deadline');
@@ -821,7 +888,7 @@ window.submitTambahTugas = function(e) {
   const newTugas = {
     id: 'tug-' + Date.now(),
     mapelId: mapelId,
-    mapelName: mapelObj ? mapelObj.name : 'Mata Pelajaran',
+    mapelName: mapelObj ? mapelObj.name : 'Mata Kuliah',
     title: title,
     desc: desc,
     deadline: deadline,
@@ -837,11 +904,11 @@ window.submitTambahTugas = function(e) {
   persistAll();
   closeModalTambahTugas();
   renderTugas();
-  showToast('Tugas baru berhasil dibuat!');
+  showToast('Penugasan baru berhasil diterbitkan untuk mahasiswa!');
 };
 
 window.deleteTugas = function(id) {
-  if (confirm('Hapus tugas ini?')) {
+  if (confirm('Hapus penugasan ini?')) {
     state.tugas = state.tugas.filter(t => t.id !== id);
     persistAll();
     renderTugas();
@@ -849,7 +916,7 @@ window.deleteTugas = function(id) {
   }
 };
 
-// Modal Kumpulkan Tugas (Siswa)
+// Modal Kumpulkan Tugas (Siswa Only)
 let activeSubmittingTugasId = null;
 
 window.openModalSubmitTugas = function(id) {
@@ -898,7 +965,7 @@ window.saveTugasSubmission = function(e) {
   if (fileInput && fileInput.files && fileInput.files[0]) {
     fileName = fileInput.files[0].name;
   } else if (!fileName) {
-    fileName = `Tugas_${tugas.mapelName.replace(/\s+/g, '')}_${state.currentUser.name.replace(/\s+/g, '')}.pdf`;
+    fileName = `Tugas_${tugas.mapelName.replace(/\s+/g, '')}_BudiPratama.pdf`;
   }
 
   const now = new Date();
@@ -910,10 +977,10 @@ window.saveTugasSubmission = function(e) {
   persistAll();
   closeModalSubmitTugas();
   renderTugas();
-  showToast('Tugas Anda berhasil dikirim ke guru!');
+  showToast('Jawaban tugas berhasil dikirimkan ke dosen!');
 };
 
-// Modal Guru: Nilai Tugas
+// Modal Dosen: Beri Nilai Tugas Mahasiswa
 let activeGradingTugasId = null;
 
 window.openModalNilaiTugasGuru = function(id) {
@@ -923,7 +990,7 @@ window.openModalNilaiTugasGuru = function(id) {
 
   const modal = document.getElementById('modal-nilai-guru');
   document.getElementById('nilai-guru-title').textContent = tugas.title;
-  document.getElementById('nilai-guru-student').textContent = `Siswa: ${state.currentUser.name}`;
+  document.getElementById('nilai-guru-student').textContent = `Mahasiswa: Budi Pratama (NIM: 2024001)`;
   document.getElementById('nilai-guru-file').textContent = tugas.submittedFile || 'Belum ada file terlampir';
   document.getElementById('nilai-guru-note').textContent = tugas.submittedNote || '-';
 
@@ -955,10 +1022,10 @@ window.saveNilaiGuru = function(e) {
   }
 
   tugas.score = score;
-  tugas.feedback = feedbackInput.value.trim() || 'Telah dievaluasi oleh guru.';
+  tugas.feedback = feedbackInput.value.trim() || 'Telah diperiksa dan dinilai oleh dosen.';
   tugas.status = 'Dinilai';
 
-  // Sinkronkan ke tabel nilai siswa jika mapel cocok
+  // Sinkronkan ke tabel nilai rapor jika mapel cocok
   const nilaiRecord = state.nilai.find(n => n.mapelId === tugas.mapelId);
   if (nilaiRecord) {
     nilaiRecord.tugas = score;
@@ -967,14 +1034,23 @@ window.saveNilaiGuru = function(e) {
   persistAll();
   closeModalNilaiGuru();
   renderTugas();
-  showToast(`Nilai ${score} berhasil disimpan dan disinkronkan ke rapor!`);
+  showToast(`Nilai ${score} berhasil disimpan dan disinkronkan ke rapor mahasiswa!`);
 };
 
 // -------------------------------------------------------------
-// 4. KUIS VIEW & INTERACTIVE QUIZ ENGINE
+// 4. KUIS VIEW (Dosen Creates/Views vs Mahasiswa Solves)
 // -------------------------------------------------------------
 function renderKuis() {
   const container = document.getElementById('kuis-list-container');
+  const isGuru = state.currentUser.role === 'guru';
+
+  const headerDesc = document.getElementById('kuis-header-desc');
+  if (headerDesc) {
+    headerDesc.textContent = isGuru
+      ? 'Susun kuis latihan mandiri dengan pertanyaan pilihan ganda, timer hitung mundur, dan kunci jawaban.'
+      : 'Uji pemahaman Anda dengan simulasi kuis pilihan ganda berwaktu. Nilai akan otomatis direkap.';
+  }
+
   if (!container) return;
 
   if (state.kuis.length === 0) {
@@ -982,10 +1058,12 @@ function renderKuis() {
       <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200">
         <i class="bi bi-patch-question text-4xl text-slate-300 mb-2 block"></i>
         <h4 class="text-base font-semibold text-slate-700">Belum ada kuis interaktif</h4>
-        <p class="text-xs text-slate-400 mb-4">Buat kuis latihan sendiri dengan pertanyaan pilihan ganda, timer hitung mundur, dan pembahasan otomatis.</p>
-        <button onclick="openModalBuatKuis()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
-          <i class="bi bi-plus-lg"></i> Buat Kuis Baru
-        </button>
+        <p class="text-xs text-slate-400 mb-4">${isGuru ? 'Klik tombol di bawah untuk membuat kuis baru beserta butir soal dan kunci jawaban.' : 'Dosen belum mempublikasikan kuis latihan untuk Anda.'}</p>
+        ${isGuru ? `
+          <button onclick="openModalBuatKuis()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm">
+            <i class="bi bi-plus-lg"></i> Buat Kuis Baru
+          </button>
+        ` : ''}
       </div>
     `;
     return;
@@ -1004,9 +1082,11 @@ function renderKuis() {
               <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${isCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
                 ${q.status}
               </span>
-              <button onclick="deleteKuis('${q.id}')" class="text-slate-400 hover:text-rose-600 text-xs transition p-1" title="Hapus Kuis">
-                <i class="bi bi-trash"></i>
-              </button>
+              ${isGuru ? `
+                <button onclick="deleteKuis('${q.id}')" class="text-slate-400 hover:text-rose-600 text-xs transition p-1" title="Hapus Kuis">
+                  <i class="bi bi-trash"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -1014,23 +1094,31 @@ function renderKuis() {
           
           <div class="flex items-center gap-4 text-xs text-slate-500 mb-4">
             <span><i class="bi bi-clock mr-1 text-slate-400"></i> ${q.durationMinutes} Menit</span>
-            <span><i class="bi bi-question-circle mr-1 text-slate-400"></i> ${q.questions?.length || 0} Soal Pilihan Ganda</span>
+            <span><i class="bi bi-question-circle mr-1 text-slate-400"></i> ${q.questions?.length || 0} Butir Soal</span>
           </div>
         </div>
 
         <div class="pt-4 border-t border-slate-100">
-          ${isCompleted ? `
-            <div class="flex items-center justify-between mb-3 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-xs">
-              <span class="text-emerald-800 font-semibold">Skor Terakhir:</span>
-              <span class="text-base font-extrabold text-emerald-700">${q.lastScore} / 100</span>
-            </div>
-            <button onclick="startQuizRunner('${q.id}')" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center justify-center gap-1.5">
-              <i class="bi bi-arrow-repeat"></i> Kerjakan Ulang Kuis
+          ${isGuru ? `
+            <!-- DOSEN: Lihat Detail Soal & Kunci Jawaban -->
+            <button onclick="previewKuisDosen('${q.id}')" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center justify-center gap-1.5">
+              <i class="bi bi-card-checklist"></i> Lihat Soal & Kunci Jawaban
             </button>
           ` : `
-            <button onclick="startQuizRunner('${q.id}')" class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
-              <i class="bi bi-play-fill text-base"></i> Mulai Kerjakan Sekarang
-            </button>
+            <!-- MAHASISWA: Kerjakan Kuis -->
+            ${isCompleted ? `
+              <div class="flex items-center justify-between mb-3 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-xs">
+                <span class="text-emerald-800 font-semibold">Skor Anda:</span>
+                <span class="text-base font-extrabold text-emerald-700">${q.lastScore} / 100</span>
+              </div>
+              <button onclick="startQuizRunner('${q.id}')" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center justify-center gap-1.5">
+                <i class="bi bi-arrow-repeat"></i> Kerjakan Ulang Kuis
+              </button>
+            ` : `
+              <button onclick="startQuizRunner('${q.id}')" class="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="bi bi-play-fill text-base"></i> Mulai Kerjakan Sekarang
+              </button>
+            `}
           `}
         </div>
       </div>
@@ -1038,12 +1126,44 @@ function renderKuis() {
   }).join('');
 }
 
-// Modal Buat Kuis Baru
+// Modal Dosen: Lihat Soal & Kunci Jawaban
+window.previewKuisDosen = function(quizId) {
+  const q = state.kuis.find(k => k.id === quizId);
+  if (!q) return;
+
+  const modal = document.getElementById('modal-quiz-result');
+  document.getElementById('result-quiz-title').textContent = `${q.title} (${q.mapelName})`;
+  document.getElementById('result-score-val').textContent = `${q.durationMinutes}m`;
+  document.getElementById('result-correct-info').textContent = `Total ${q.questions?.length || 0} Soal Pilihan Ganda (Tampilan Dosen)`;
+
+  const reviewBox = document.getElementById('result-quiz-review');
+  if (reviewBox) {
+    reviewBox.innerHTML = q.questions.map((item, idx) => `
+      <div class="p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/30 text-xs space-y-1.5">
+        <div class="font-bold text-slate-800">Soal #${idx + 1}: ${item.question}</div>
+        <div class="space-y-1 text-slate-600 pl-2">
+          ${item.options.map((opt, oIdx) => `
+            <div class="${oIdx === item.correctIndex ? 'font-bold text-emerald-700' : ''}">
+              ${String.fromCharCode(65 + oIdx)}. ${opt} ${oIdx === item.correctIndex ? '✓ (Kunci Jawaban)' : ''}
+            </div>
+          `).join('')}
+        </div>
+        <div class="text-[11px] text-slate-500 pt-1 border-t border-indigo-100">
+          <em>Pembahasan:</em> ${item.explanation}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  modal?.classList.remove('hidden');
+};
+
+// Modal Buat Kuis Baru (Dosen)
 window.openModalBuatKuis = function() {
   const modal = document.getElementById('modal-buat-kuis');
   const select = document.getElementById('buat-kuis-mapel');
   if (select) {
-    select.innerHTML = '<option value="">Pilih Mata Pelajaran</option>';
+    select.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
     state.mapel.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id;
@@ -1073,7 +1193,7 @@ window.submitBuatKuis = function(e) {
   const q1Exp = document.getElementById('buat-kuis-q1-exp').value.trim();
 
   if (!mapelId || !title || !q1Text || !q1OptA || !q1OptB) {
-    showToast('Mohon lengkapi judul kuis dan minimal pertanyaan pertama!', 'warning');
+    showToast('Mohon lengkapi judul kuis dan pertanyaan pertama!', 'warning');
     return;
   }
 
@@ -1084,11 +1204,10 @@ window.submitBuatKuis = function(e) {
       question: q1Text,
       options: [q1OptA, q1OptB, q1OptC, q1OptD],
       correctIndex: q1Correct,
-      explanation: q1Exp || 'Jawaban telah diverifikasi oleh pembuat kuis.'
+      explanation: q1Exp || 'Kunci jawaban terverifikasi.'
     }
   ];
 
-  // Optional Q2 check
   const q2Text = document.getElementById('buat-kuis-q2-text')?.value.trim();
   if (q2Text) {
     const q2OptA = document.getElementById('buat-kuis-q2-optA').value.trim();
@@ -1110,7 +1229,7 @@ window.submitBuatKuis = function(e) {
   const newKuis = {
     id: 'quiz-' + Date.now(),
     mapelId: mapelId,
-    mapelName: mapelObj ? mapelObj.name : 'Mata Pelajaran',
+    mapelName: mapelObj ? mapelObj.name : 'Mata Kuliah',
     title: title,
     durationMinutes: duration,
     questionsCount: questions.length,
@@ -1124,7 +1243,7 @@ window.submitBuatKuis = function(e) {
   persistAll();
   closeModalBuatKuis();
   renderKuis();
-  showToast('Kuis baru berhasil dibuat dan siap dikerjakan!');
+  showToast('Kuis baru berhasil diterbitkan untuk mahasiswa!');
 };
 
 window.deleteKuis = function(id) {
@@ -1136,7 +1255,7 @@ window.deleteKuis = function(id) {
   }
 };
 
-// Interactive Quiz Runner Engine
+// Interactive Quiz Runner Engine (Mahasiswa)
 window.startQuizRunner = function(quizId) {
   const quiz = state.kuis.find(q => q.id === quizId);
   if (!quiz || !quiz.questions || quiz.questions.length === 0) {
@@ -1293,7 +1412,6 @@ window.finishQuiz = function() {
     targetQuiz.lastScore = finalScore;
     targetQuiz.lastCompletedAt = new Date().toLocaleDateString('id-ID');
 
-    // Update grade in Nilai table if mapel matches
     const targetNilai = state.nilai.find(n => n.mapelId === targetQuiz.mapelId);
     if (targetNilai) {
       targetNilai.kuis = finalScore;
@@ -1351,11 +1469,25 @@ window.closeQuizResult = function() {
 };
 
 // -------------------------------------------------------------
-// 5. ABSENSI VIEW
+// 5. ABSENSI VIEW (Dosen Manages vs Mahasiswa Check-In)
 // -------------------------------------------------------------
 function renderAbsensi() {
   const container = document.getElementById('absensi-table-body');
   const selectMapel = document.getElementById('absen-mapel');
+  const isGuru = state.currentUser.role === 'guru';
+
+  // Role labels
+  const formTitle = document.getElementById('absensi-form-title');
+  const formDesc = document.getElementById('absensi-form-desc');
+  const mhsDropdownGroup = document.getElementById('absensi-mhs-select-group');
+
+  if (formTitle) formTitle.textContent = isGuru ? 'Catat Kehadiran Mahasiswa' : 'Presensi Mandiri Hari Ini';
+  if (formDesc) formDesc.textContent = isGuru ? 'Input kehadiran mahasiswa per pertemuan' : 'Konfirmasi kehadiran kelas Anda hari ini';
+
+  if (mhsDropdownGroup) {
+    if (isGuru) mhsDropdownGroup.classList.remove('hidden');
+    else mhsDropdownGroup.classList.add('hidden');
+  }
 
   if (selectMapel) {
     selectMapel.innerHTML = '';
@@ -1381,11 +1513,15 @@ function renderAbsensi() {
   document.getElementById('absensi-stat-sakit').textContent = sakit;
   document.getElementById('absensi-stat-alpa').textContent = alpa;
 
+  document.getElementById('absensi-rate-label').textContent = isGuru 
+    ? 'Rata-rata Persentase Kehadiran Kelas' 
+    : 'Tingkat Persentase Kehadiran Saya';
+
   if (state.absensi.length === 0) {
     container.innerHTML = `
       <tr>
-        <td colspan="6" class="py-8 text-center text-xs text-slate-400">
-          Belum ada catatan presensi. Gunakan formulir di sebelah kiri untuk mengisi presensi mandiri Anda hari ini.
+        <td colspan="7" class="py-8 text-center text-xs text-slate-400">
+          Belum ada catatan presensi. Gunakan formulir di sebelah kiri untuk merekam kehadiran.
         </td>
       </tr>
     `;
@@ -1402,6 +1538,7 @@ function renderAbsensi() {
 
     return `
       <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+        <td class="py-3 px-4 text-xs font-semibold text-slate-800">${row.studentName || 'Budi Pratama'}</td>
         <td class="py-3 px-4 text-xs font-medium text-slate-800">${formatDateIndo(row.date)}</td>
         <td class="py-3 px-4 text-xs font-semibold text-slate-800">${row.mapel}</td>
         <td class="py-3 px-4 text-xs text-slate-500">${row.waktu || '08:00 WIB'}</td>
@@ -1423,12 +1560,18 @@ function renderAbsensi() {
 
 window.submitAbsensiHariIni = function(e) {
   e.preventDefault();
+  const isGuru = state.currentUser.role === 'guru';
   const mapel = document.getElementById('absen-mapel').value;
   const status = document.querySelector('input[name="absen-status"]:checked')?.value || 'Hadir';
-  const keterangan = document.getElementById('absen-keterangan').value.trim() || 'Presensi digital mandiri';
+  const keterangan = document.getElementById('absen-keterangan').value.trim() || 'Presensi digital tercatat';
+  
+  let studentName = 'Budi Pratama (NIM: 2024001)';
+  if (isGuru) {
+    studentName = document.getElementById('absen-student-select').value;
+  }
 
   if (!mapel) {
-    showToast('Pilih mata pelajaran untuk presensi!', 'warning');
+    showToast('Pilih mata kuliah untuk presensi!', 'warning');
     return;
   }
 
@@ -1436,6 +1579,7 @@ window.submitAbsensiHariIni = function(e) {
 
   const newAbsen = {
     id: 'abs-' + Date.now(),
+    studentName: studentName,
     date: todayStr,
     mapel: mapel,
     waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
@@ -1446,7 +1590,7 @@ window.submitAbsensiHariIni = function(e) {
   state.absensi.unshift(newAbsen);
   persistAll();
   renderAbsensi();
-  showToast(`Presensi (${status}) untuk ${mapel} berhasil disimpan!`);
+  showToast(`Presensi (${status}) untuk ${studentName} berhasil dicatat!`);
 };
 
 window.deleteAbsensi = function(id) {
@@ -1459,23 +1603,53 @@ window.deleteAbsensi = function(id) {
 };
 
 // -------------------------------------------------------------
-// 6. NILAI / RAPOR VIEW
+// 6. NILAI VIEW (Dosen Grades vs Mahasiswa Views Report)
 // -------------------------------------------------------------
 function renderNilai() {
   const container = document.getElementById('nilai-table-body');
-  if (!container) return;
+  const isGuru = state.currentUser.role === 'guru';
+
+  // Role Header & Action Buttons
+  const nilaiViewTitle = document.getElementById('nilai-view-title');
+  const nilaiViewDesc = document.getElementById('nilai-view-desc');
+  const btnInputNilai = document.getElementById('btn-open-input-nilai');
+  const bannerStudentCard = document.getElementById('nilai-student-banner');
+
+  if (nilaiViewTitle) {
+    nilaiViewTitle.textContent = isGuru ? 'Buku Nilai (Gradebook) & Penilaian Mahasiswa' : 'Transkrip Nilai Akademik & Rapor';
+  }
+  if (nilaiViewDesc) {
+    nilaiViewDesc.textContent = isGuru
+      ? 'Kelola penilaian kelas: input nilai Tugas (30%), Kuis (20%), UTS (25%), dan UAS (25%) untuk mahasiswa.'
+      : 'Transkrip hasil evaluasi belajar Anda yang telah dinilai dan diverifikasi oleh dosen pengampu.';
+  }
+
+  // Hide input button for Mahasiswa (only Dosen can input/edit grades!)
+  if (btnInputNilai) {
+    if (isGuru) btnInputNilai.classList.remove('hidden');
+    else btnInputNilai.classList.add('hidden');
+  }
 
   // Student header update
   const studentNameEl = document.getElementById('rapor-student-name');
   const studentInfoEl = document.getElementById('rapor-student-info');
-  if (studentNameEl) studentNameEl.textContent = state.currentUser.name;
-  if (studentInfoEl) studentInfoEl.textContent = `NIS/NIM: ${state.currentUser.nis} • ${state.currentUser.kelas} • ${state.currentUser.sekolah || 'SMA/Kampus'}`;
+  const studentBadgeRole = document.getElementById('rapor-badge-role');
+
+  if (isGuru) {
+    if (studentBadgeRole) studentBadgeRole.textContent = 'Buku Nilai Dosen Pengampu';
+    if (studentNameEl) studentNameEl.textContent = 'Kelas Semester 7 - TI (Bimbingan Dosen)';
+    if (studentInfoEl) studentInfoEl.textContent = `Pengampu: ${state.currentUser.name} • Fakultas Ilmu Komputer`;
+  } else {
+    if (studentBadgeRole) studentBadgeRole.textContent = 'Rapor Hasil Belajar Mahasiswa';
+    if (studentNameEl) studentNameEl.textContent = 'Budi Pratama';
+    if (studentInfoEl) studentInfoEl.textContent = `NIM: 2024001 • Semester 7 - TI • Fakultas Ilmu Komputer`;
+  }
 
   if (state.nilai.length === 0) {
     container.innerHTML = `
       <tr>
-        <td colspan="11" class="py-10 text-center text-xs text-slate-400">
-          Belum ada rekap nilai mata pelajaran. Klik tombol <strong>"Input Nilai Baru"</strong> di atas untuk memasukkan nilai sendiri.
+        <td colspan="12" class="py-10 text-center text-xs text-slate-400">
+          ${isGuru ? 'Belum ada data nilai mahasiswa. Klik tombol <strong>"Input Nilai Mahasiswa"</strong> di atas untuk memasukkan nilai.' : 'Belum ada transkrip nilai yang diterbitkan oleh dosen pengampu.'}
         </td>
       </tr>
     `;
@@ -1509,9 +1683,15 @@ function renderNilai() {
     return `
       <tr class="hover:bg-slate-50 transition border-b border-slate-100">
         <td class="py-3 px-3 text-xs text-center text-slate-400 font-medium">${idx + 1}</td>
+        ${isGuru ? `
+          <td class="py-3 px-4 text-xs font-bold text-slate-800">
+            <div>${n.studentName || 'Budi Pratama'}</div>
+            <div class="text-[11px] font-normal text-slate-400">NIM: ${n.studentNim || '2024001'}</div>
+          </td>
+        ` : ''}
         <td class="py-3 px-4 text-xs font-bold text-slate-800">
           <div>${n.mapelName}</div>
-          <div class="text-[11px] font-normal text-slate-400">${n.guru || 'Guru Pengampu'}</div>
+          <div class="text-[11px] font-normal text-slate-400">${n.guru || 'Dosen Pengampu'}</div>
         </td>
         <td class="py-3 px-3 text-xs text-center font-semibold text-slate-600">${n.kkm}</td>
         <td class="py-3 px-3 text-xs text-center font-semibold text-slate-700">${n.tugas}</td>
@@ -1529,11 +1709,13 @@ function renderNilai() {
             ${tuntas ? 'Tuntas' : 'Remedial'}
           </span>
         </td>
-        <td class="py-3 px-2 text-xs text-right">
-          <button onclick="deleteNilai('${n.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus Nilai">
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
+        ${isGuru ? `
+          <td class="py-3 px-2 text-xs text-right">
+            <button onclick="deleteNilai('${n.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="Hapus Nilai">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        ` : ''}
       </tr>
     `;
   }).join('');
@@ -1550,12 +1732,12 @@ function renderNilai() {
   document.getElementById('rapor-avg-grade').textContent = gradeLetter;
 }
 
-// Modal Input Nilai Baru
+// Modal Input Nilai Baru (Dosen Only)
 window.openModalInputNilai = function() {
   const modal = document.getElementById('modal-input-nilai');
   const select = document.getElementById('input-nilai-mapel');
   if (select) {
-    select.innerHTML = '<option value="">Pilih / Ketik Mata Pelajaran</option>';
+    select.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
     state.mapel.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.name;
@@ -1572,11 +1754,12 @@ window.closeModalInputNilai = function() {
 
 window.submitInputNilai = function(e) {
   e.preventDefault();
+  const student = document.getElementById('input-nilai-mhs-select').value;
   let mapelName = document.getElementById('input-nilai-mapel').value;
   const customMapel = document.getElementById('input-nilai-mapel-custom').value.trim();
   if (customMapel) mapelName = customMapel;
 
-  const guru = document.getElementById('input-nilai-guru').value.trim() || 'Dosen / Guru Pengampu';
+  const guru = state.currentUser.name;
   const kkm = parseInt(document.getElementById('input-nilai-kkm').value, 10) || 75;
   const tugas = parseInt(document.getElementById('input-nilai-tugas').value, 10) || 0;
   const kuis = parseInt(document.getElementById('input-nilai-kuis').value, 10) || 0;
@@ -1584,23 +1767,20 @@ window.submitInputNilai = function(e) {
   const uas = parseInt(document.getElementById('input-nilai-uas').value, 10) || 0;
 
   if (!mapelName) {
-    showToast('Tentukan nama mata pelajaran!', 'warning');
+    showToast('Tentukan nama mata kuliah!', 'warning');
     return;
   }
 
-  // Also add to mapel list if not present
-  if (!state.mapel.some(m => m.name.toLowerCase() === mapelName.toLowerCase())) {
-    state.mapel.push({
-      id: 'MP-' + Date.now(),
-      name: mapelName,
-      guru: guru,
-      color: 'indigo',
-      icon: 'book'
-    });
-  }
+  // Parse student name and NIM
+  let sName = 'Budi Pratama';
+  let sNim = '2024001';
+  if (student.includes('Siti')) { sName = 'Siti Nurhaliza'; sNim = '2024002'; }
+  else if (student.includes('Ahmad')) { sName = 'Ahmad Fauzan'; sNim = '2024003'; }
 
   const newNilai = {
     id: 'nil-' + Date.now(),
+    studentName: sName,
+    studentNim: sNim,
     mapelId: 'MP-' + Date.now(),
     mapelName: mapelName,
     guru: guru,
@@ -1615,15 +1795,15 @@ window.submitInputNilai = function(e) {
   persistAll();
   closeModalInputNilai();
   renderNilai();
-  showToast(`Nilai mata pelajaran "${mapelName}" berhasil ditambahkan ke rapor!`);
+  showToast(`Nilai ${sName} untuk "${mapelName}" berhasil disimpan!`);
 };
 
 window.deleteNilai = function(id) {
-  if (confirm('Hapus baris nilai mata pelajaran ini?')) {
+  if (confirm('Hapus baris nilai ini?')) {
     state.nilai = state.nilai.filter(n => n.id !== id);
     persistAll();
     renderNilai();
-    showToast('Nilai berhasil dihapus dari rapor!', 'info');
+    showToast('Nilai berhasil dihapus!', 'info');
   }
 };
 
@@ -1637,8 +1817,8 @@ window.printRapor = function() {
 window.openModalEditProfil = function() {
   const modal = document.getElementById('modal-edit-profil');
   document.getElementById('edit-profil-name').value = state.currentUser.name || '';
-  document.getElementById('edit-profil-nis').value = state.currentUser.nis || '';
-  document.getElementById('edit-profil-kelas').value = state.currentUser.kelas || '';
+  document.getElementById('edit-profil-nis').value = state.currentUser.nis || state.currentUser.nip || '';
+  document.getElementById('edit-profil-kelas').value = state.currentUser.kelas || state.currentUser.mapelUtama || '';
   document.getElementById('edit-profil-sekolah').value = state.currentUser.sekolah || '';
   modal?.classList.remove('hidden');
 };
@@ -1660,8 +1840,13 @@ window.saveEditProfil = function(e) {
   }
 
   state.currentUser.name = name;
-  state.currentUser.nis = nis;
-  state.currentUser.kelas = kelas;
+  if (state.currentUser.role === 'guru') {
+    state.currentUser.nip = nis;
+    state.currentUser.mapelUtama = kelas;
+  } else {
+    state.currentUser.nis = nis;
+    state.currentUser.kelas = kelas;
+  }
   state.currentUser.sekolah = sekolah;
 
   persistAll();
