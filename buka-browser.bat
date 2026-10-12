@@ -1,0 +1,3 @@
+@echo off
+echo Membuka aplikasi EduSmart LMS di browser...
+start http://localhost:5173

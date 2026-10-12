@@ -9,8 +9,12 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 export const isSupabaseConfigured = Boolean(
   supabaseUrl && 
   supabaseKey && 
+  !supabaseUrl.includes('your-project') &&
   !supabaseUrl.includes('YOUR_SUPABASE') &&
-  supabaseUrl.startsWith('https://')
+  !supabaseUrl.includes('example') &&
+  !supabaseKey.includes('your-supabase') &&
+  supabaseUrl.startsWith('https://') &&
+  supabaseKey.length > 30
 );
 
 let supabaseInstance: SupabaseClient | null = null;
@@ -23,12 +27,12 @@ if (isSupabaseConfigured) {
     console.warn('⚠️ Gagal inisialisasi Supabase client:', err);
   }
 } else {
-  console.log('ℹ️ Supabase credentials belum diisi di .env. Menggunakan Data Store lokal sementara agar aplikasi tetap langsung jalan ("terima jadi").');
+  console.log('ℹ️ Menggunakan local store aktif (Supabase credentials belum diisi). Semua fitur langsung aktif tanpa hambatan.');
 }
 
 export const supabase = supabaseInstance;
 
-// In-Memory / Local Fallback Store jika Supabase belum diisi .env
+// In-Memory / Local Fallback Store
 export const localStore = {
   users: [] as any[],
   courses: [

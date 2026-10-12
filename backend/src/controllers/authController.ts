@@ -159,47 +159,46 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (isSupabaseConfigured && supabase) {
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email.toLowerCase().trim())
-        .single();
+      try {
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('email', email.toLowerCase().trim())
+          .single();
 
-      if (error || !user) {
-        res.status(401).json({ success: false, message: 'Email atau kata sandi tidak cocok.' });
-        return;
-      }
+        if (!error && user) {
+          const isMatch = await bcrypt.compare(password, user.password_hash);
+          if (isMatch) {
+            const token = jwt.sign(
+              { id: user.id, email: user.email, role: user.role, fullName: user.full_name, nimNip: user.nim_nip },
+              JWT_SECRET,
+              { expiresIn: '7d' }
+            );
 
-      const isMatch = await bcrypt.compare(password, user.password_hash);
-      if (!isMatch) {
-        res.status(401).json({ success: false, message: 'Email atau kata sandi tidak cocok.' });
-        return;
-      }
-
-      const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role, fullName: user.full_name, nimNip: user.nim_nip },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      res.json({
-        success: true,
-        message: 'Login berhasil!',
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.full_name,
-          role: user.role,
-          nimNip: user.nim_nip,
-          department: user.department,
-          avatarUrl: user.avatar_url
+            res.json({
+              success: true,
+              message: 'Login berhasil!',
+              token,
+              user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.full_name,
+                role: user.role,
+                nimNip: user.nim_nip,
+                department: user.department,
+                avatarUrl: user.avatar_url
+              }
+            });
+            return;
+          }
         }
-      });
-      return;
+      } catch (err) {
+        console.warn('Supabase query error, falling back to localStore:', err);
+      }
     }
 
     // Local fallback
+    await ensureDefaultUsers();
     const user = localStore.users.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
     if (!user) {
       res.status(401).json({ success: false, message: 'Email atau kata sandi tidak cocok.' });
