@@ -8,9 +8,10 @@ import {
   HelpCircle, 
   CalendarCheck, 
   Award, 
-  RefreshCw, 
   LogOut,
-  X 
+  X,
+  ShieldCheck,
+  UserCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -18,23 +19,25 @@ interface SidebarProps {
   onSelectTab: (tab: string) => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
+  onOpenLogoutModal: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   isOpenMobile,
-  onCloseMobile
+  onCloseMobile,
+  onOpenLogoutModal
 }) => {
-  const { user, switchRoleDemo, logout } = useAuth();
+  const { user } = useAuth();
   const isDosen = user?.role === 'dosen';
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'materi', label: isDosen ? 'Kelola Materi' : 'Materi Pembelajaran', icon: BookOpen },
-    { id: 'tugas', label: isDosen ? 'Evaluasi Tugas' : 'Tugas Kuliah', icon: CheckSquare },
-    { id: 'kuis', label: isDosen ? 'Bank Kuis' : 'Kuis Interaktif', icon: HelpCircle },
-    { id: 'absensi', label: isDosen ? 'Presensi Kelas' : 'Presensi Mandiri', icon: CalendarCheck },
+    { id: 'materi', label: isDosen ? 'Kelola Materi Kuliah' : 'Materi Pembelajaran', icon: BookOpen },
+    { id: 'tugas', label: isDosen ? 'Evaluasi & Penilaian Tugas' : 'Tugas Kuliah', icon: CheckSquare },
+    { id: 'kuis', label: isDosen ? 'Bank Kuis Interaktif' : 'Kuis Interaktif', icon: HelpCircle },
+    { id: 'absensi', label: isDosen ? 'Rekap Presensi Kelas' : 'Presensi Mandiri', icon: CalendarCheck },
     { id: 'nilai', label: isDosen ? 'Buku Nilai (Gradebook)' : 'Transkrip Nilai / Rapor', icon: Award }
   ];
 
@@ -73,31 +76,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Role Pill & Demo Switcher */}
+        {/* Verified Role Information */}
         <div className="px-5 pt-4">
           <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Peran Akun</div>
-              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full inline-block mt-0.5 ${
-                isDosen ? 'bg-violet-100 text-violet-700' : 'bg-indigo-100 text-indigo-700'
-              }`}>
-                {isDosen ? 'Dosen Pengajar' : 'Mahasiswa Aktif'}
-              </span>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                <span>Status Akun Terverifikasi</span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full inline-block truncate ${
+                  isDosen ? 'bg-violet-100 text-violet-800' : 'bg-indigo-100 text-indigo-800'
+                }`}>
+                  {isDosen ? 'Dosen Pengajar' : 'Mahasiswa Aktif'}
+                </span>
+              </div>
             </div>
-            <button 
-              onClick={switchRoleDemo}
-              className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 text-[11px] font-semibold text-slate-700 hover:text-indigo-600 shadow-2xs transition flex items-center gap-1.5"
-              title="Ganti peran antara Dosen dan Mahasiswa"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Ganti Role</span>
-            </button>
+
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-2xs">
+              <UserCheck className="w-4 h-4 text-emerald-600" />
+            </div>
           </div>
         </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          <div className="px-3 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Menu Akademik</div>
+          <div className="px-3 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Menu Perkuliahan
+          </div>
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -121,13 +127,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </nav>
 
-        {/* User Profile Card */}
+        {/* User Profile Card & Validated Logout Trigger */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
             <img 
               src={user?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
               alt="Avatar" 
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/20"
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/20 shrink-0"
             />
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-slate-800 truncate">{user?.fullName || 'Pengguna'}</h4>
@@ -136,9 +142,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </p>
             </div>
             <button 
-              onClick={logout}
-              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-xl transition"
-              title="Keluar"
+              onClick={onOpenLogoutModal}
+              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+              title="Keluar dari Akun (Konfirmasi)"
             >
               <LogOut className="w-4 h-4" />
             </button>

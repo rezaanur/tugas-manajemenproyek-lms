@@ -6,6 +6,7 @@ import { Header } from './components/layout/Header';
 import { ToastContainer } from './components/common/ToastContainer';
 
 // Page Views
+import { AuthPortal } from './pages/AuthPortal';
 import { DashboardView } from './pages/DashboardView';
 import { MateriView } from './pages/MateriView';
 import { TugasView } from './pages/TugasView';
@@ -21,13 +22,13 @@ import { GradeTugasModal } from './components/modals/GradeTugasModal';
 import { KuisModal } from './components/modals/KuisModal';
 import { QuizRunnerModal } from './components/modals/QuizRunnerModal';
 import { NilaiModal } from './components/modals/NilaiModal';
-import { AuthModal } from './components/modals/AuthModal';
+import { LogoutModal } from './components/modals/LogoutModal';
 
 import type { Assignment, Submission, Quiz, Grade } from './types';
-import { LogIn, GraduationCap } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 
 const LMSMainApp: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -37,7 +38,7 @@ const LMSMainApp: React.FC = () => {
   const [isTugasModalOpen, setIsTugasModalOpen] = useState<boolean>(false);
   const [isKuisModalOpen, setIsKuisModalOpen] = useState<boolean>(false);
   const [isNilaiModalOpen, setIsNilaiModalOpen] = useState<boolean>(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
 
   // Assignment Submit & Grade states
   const [submitAssignment, setSubmitAssignment] = useState<Assignment | null>(null);
@@ -69,6 +70,30 @@ const LMSMainApp: React.FC = () => {
     setIsNilaiModalOpen(true);
   };
 
+  // Loading Screen while verifying JWT session
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-white">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center mb-4 shadow-xl shadow-indigo-500/30 animate-pulse">
+          <GraduationCap className="w-8 h-8" />
+        </div>
+        <h2 className="text-lg font-bold">EduSmart LMS</h2>
+        <p className="text-xs text-slate-400 mt-1">Memeriksa autentikasi sesi perkuliahan...</p>
+      </div>
+    );
+  }
+
+  // Unauthenticated: Show Campus Auth Portal (No internal LMS visible)
+  if (!user) {
+    return (
+      <>
+        <ToastContainer />
+        <AuthPortal />
+      </>
+    );
+  }
+
+  // Authenticated: Show Full LMS Application
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased text-slate-800">
       {/* Toast Notification Layer */}
@@ -82,6 +107,7 @@ const LMSMainApp: React.FC = () => {
           onSelectTab={setActiveTab}
           isOpenMobile={mobileMenuOpen}
           onCloseMobile={() => setMobileMenuOpen(false)}
+          onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
         />
 
         {/* Content Area */}
@@ -94,67 +120,45 @@ const LMSMainApp: React.FC = () => {
 
           {/* Page Content Body */}
           <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto animate-fade-in">
-            {!user ? (
-              /* Logged-out state */
-              <div className="py-20 text-center bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
-                  <GraduationCap className="w-8 h-8" />
-                </div>
-                <h2 className="text-xl font-extrabold text-slate-800">Selamat Datang di EduSmart LMS</h2>
-                <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-                  Silakan masuk untuk mengakses materi, pengumpulan tugas, kuis online, dan transkrip nilai.
-                </p>
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="mt-5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-100 transition inline-flex items-center gap-2"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Masuk ke Akun Sekarang</span>
-                </button>
-              </div>
-            ) : (
-              <>
-                {activeTab === 'dashboard' && (
-                  <DashboardView
-                    onNavigate={setActiveTab}
-                    onOpenMateriModal={() => setIsMateriModalOpen(true)}
-                    onOpenTugasModal={() => setIsTugasModalOpen(true)}
-                    onOpenKuisModal={() => setIsKuisModalOpen(true)}
-                    onOpenNilaiModal={() => handleOpenNilai()}
-                  />
-                )}
+            {activeTab === 'dashboard' && (
+              <DashboardView
+                onNavigate={setActiveTab}
+                onOpenMateriModal={() => setIsMateriModalOpen(true)}
+                onOpenTugasModal={() => setIsTugasModalOpen(true)}
+                onOpenKuisModal={() => setIsKuisModalOpen(true)}
+                onOpenNilaiModal={() => handleOpenNilai()}
+              />
+            )}
 
-                {activeTab === 'materi' && (
-                  <MateriView
-                    onOpenCreateModal={() => setIsMateriModalOpen(true)}
-                  />
-                )}
+            {activeTab === 'materi' && (
+              <MateriView
+                onOpenCreateModal={() => setIsMateriModalOpen(true)}
+              />
+            )}
 
-                {activeTab === 'tugas' && (
-                  <TugasView
-                    onOpenCreateModal={() => setIsTugasModalOpen(true)}
-                    onOpenSubmitModal={handleOpenSubmitTugas}
-                    onOpenGradeModal={handleOpenGradeTugas}
-                  />
-                )}
+            {activeTab === 'tugas' && (
+              <TugasView
+                onOpenCreateModal={() => setIsTugasModalOpen(true)}
+                onOpenSubmitModal={handleOpenSubmitTugas}
+                onOpenGradeModal={handleOpenGradeTugas}
+              />
+            )}
 
-                {activeTab === 'kuis' && (
-                  <KuisView
-                    onOpenCreateModal={() => setIsKuisModalOpen(true)}
-                    onStartQuiz={handleStartQuiz}
-                  />
-                )}
+            {activeTab === 'kuis' && (
+              <KuisView
+                onOpenCreateModal={() => setIsKuisModalOpen(true)}
+                onStartQuiz={handleStartQuiz}
+              />
+            )}
 
-                {activeTab === 'absensi' && (
-                  <AbsensiView />
-                )}
+            {activeTab === 'absensi' && (
+              <AbsensiView />
+            )}
 
-                {activeTab === 'nilai' && (
-                  <NilaiView
-                    onOpenCreateModal={handleOpenNilai}
-                  />
-                )}
-              </>
+            {activeTab === 'nilai' && (
+              <NilaiView
+                onOpenCreateModal={handleOpenNilai}
+              />
             )}
           </main>
         </div>
@@ -210,9 +214,9 @@ const LMSMainApp: React.FC = () => {
         existingGrade={editingGrade}
       />
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
       />
     </div>
   );
