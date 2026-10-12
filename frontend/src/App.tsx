@@ -78,7 +78,7 @@ const LMSMainApp: React.FC = () => {
           <GraduationCap className="w-8 h-8" />
         </div>
         <h2 className="text-lg font-bold">EduSmart LMS</h2>
-        <p className="text-xs text-slate-400 mt-1">Memeriksa autentikasi sesi perkuliahan...</p>
+        <p className="text-xs text-slate-400 mt-1">Memuat portal perkuliahan...</p>
       </div>
     );
   }

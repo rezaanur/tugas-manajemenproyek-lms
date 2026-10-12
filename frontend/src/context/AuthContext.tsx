@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return { success: false, message: res.message || 'Gagal login.' };
     } catch (err: any) {
-      return { success: false, message: err.response?.data?.message || err.message || 'Gagal terhubung ke server autentikasi.' };
+      return { success: false, message: err.response?.data?.message || err.message || 'Gagal terhubung ke sistem. Pastikan koneksi internet Anda lancar.' };
     }
   };
 

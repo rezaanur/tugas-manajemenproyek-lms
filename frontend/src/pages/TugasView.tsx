@@ -229,7 +229,7 @@ export const TugasView: React.FC<TugasViewProps> = ({
                           onClick={() => toggleExpand(assign.id)}
                           className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5"
                         >
-                          <span>Submisi ({submissionsCount})</span>
+                          <span>Pengumpulan ({submissionsCount})</span>
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
                       </>
@@ -329,7 +329,7 @@ export const TugasView: React.FC<TugasViewProps> = ({
                           <thead>
                             <tr className="border-b border-slate-100 text-slate-400 font-semibold">
                               <th className="pb-2.5">Mahasiswa</th>
-                              <th className="pb-2.5">Waktu Submit</th>
+                              <th className="pb-2.5">Waktu Pengumpulan</th>
                               <th className="pb-2.5">Lampiran & Catatan</th>
                               <th className="pb-2.5">Nilai</th>
                               <th className="pb-2.5 text-right">Aksi</th>

@@ -17,7 +17,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ success: false, message: 'Akses ditolak: Token autentikasi tidak ditemukan.' });
+    res.status(401).json({ success: false, message: 'Silakan masuk ke akun Anda terlebih dahulu.' });
     return;
   }
 
@@ -28,21 +28,22 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({ success: false, message: 'Token tidak valid atau telah kedaluwarsa. Silakan login kembali.' });
+    res.status(403).json({ success: false, message: 'Sesi Anda telah berakhir. Silakan masuk kembali.' });
   }
 };
 
 export const requireRole = (allowedRole: 'dosen' | 'mahasiswa') => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'Autentikasi diperlukan.' });
+      res.status(401).json({ success: false, message: 'Silakan masuk ke akun Anda terlebih dahulu.' });
       return;
     }
 
     if (req.user.role !== allowedRole) {
+      const roleLabel = allowedRole === 'dosen' ? 'Dosen' : 'Mahasiswa';
       res.status(403).json({ 
         success: false, 
-        message: `Akses ditolak: Operasi ini hanya diizinkan untuk peran '${allowedRole.toUpperCase()}'. Peran Anda saat ini adalah '${req.user.role.toUpperCase()}'.` 
+        message: `Halaman atau fitur ini khusus untuk ${roleLabel}.` 
       });
       return;
     }

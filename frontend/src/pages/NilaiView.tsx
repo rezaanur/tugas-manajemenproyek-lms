@@ -70,7 +70,7 @@ export const NilaiView: React.FC<NilaiViewProps> = ({ onOpenCreateModal }) => {
             <span>Sistem Penilaian Akademik</span>
           </div>
           <h1 className="text-lg md:text-xl font-extrabold text-slate-800">
-            {isDosen ? 'Buku Nilai (Gradebook) & Evaluasi Mahasiswa' : 'Transkrip Nilai & Capaian Belajar'}
+            {isDosen ? 'Buku Nilai & Evaluasi Mahasiswa' : 'Transkrip Nilai & Capaian Belajar'}
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
             {isDosen 

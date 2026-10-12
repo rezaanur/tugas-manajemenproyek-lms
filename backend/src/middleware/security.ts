@@ -22,7 +22,7 @@ export const authLimiter = rateLimit({
   max: 50, // max 50 request per IP dalam 15 menit
   message: {
     success: false,
-    message: 'Terlalu banyak percobaan autentikasi dari alamat IP ini. Silakan coba lagi setelah 15 menit demi keamanan.'
+    message: 'Terlalu banyak percobaan masuk yang salah. Silakan coba lagi setelah 15 menit.'
   },
   standardHeaders: true,
   legacyHeaders: false

@@ -179,7 +179,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-slate-500">
-              {isDosen ? 'Submisi Menunggu' : 'Presensi Kehadiran'}
+              {isDosen ? 'Tugas Perlu Dinilai' : 'Presensi Kehadiran'}
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition">
               {isDosen ? <Clock className="w-4 h-4" /> : <CalendarCheck className="w-4 h-4" />}
@@ -189,7 +189,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {isDosen ? unreviewedSubmissions : `${myAttendancesCount} Hari`}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            {isDosen ? 'Perlu dinilai & feedback' : 'Presensi tercatat'}
+            {isDosen ? 'Menunggu koreksi dosen' : 'Presensi tercatat'}
           </div>
         </div>
       </div>
@@ -247,7 +247,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <Award className="w-4 h-4" />
                   </div>
                   <h3 className="text-xs font-bold text-slate-800">Input Nilai</h3>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Rekapitulasi gradebook</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Rekap nilai mahasiswa</p>
                 </button>
               </div>
             </div>
@@ -547,7 +547,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Ikuti Kuis Interaktif untuk Menguji Penguasaan Topik
               </h3>
               <p className="text-xs text-violet-100 mt-1 mb-4">
-                Sistem memberikan koreksi instan dan pembahasan setelah kuis disubmit.
+                Sistem memberikan koreksi instan dan pembahasan setelah kuis selesai dikerjakan.
               </p>
               <button
                 onClick={() => onNavigate('kuis')}

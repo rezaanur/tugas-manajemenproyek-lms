@@ -238,7 +238,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   if (!req.user) {
-    res.status(401).json({ success: false, message: 'Belum terautentikasi.' });
+    res.status(401).json({ success: false, message: 'Silakan masuk ke akun Anda terlebih dahulu.' });
     return;
   }
 

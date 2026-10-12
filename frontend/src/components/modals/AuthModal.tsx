@@ -217,7 +217,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         <div className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1 pt-1">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Keamanan Terjamin dengan JWT Authentication & Bcrypt</span>
+          <span>Keamanan akun perkuliahan terjamin dan terlindungi</span>
         </div>
       </div>
     </Modal>
