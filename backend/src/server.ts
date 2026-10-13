@@ -55,7 +55,11 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 EduSmart LMS Express Server running securely on port ${PORT}`);
-  console.log(`📡 Health Check URL: http://localhost:${PORT}/api/health`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 EduSmart LMS Express Server running securely on port ${PORT}`);
+    console.log(`📡 Health Check URL: http://localhost:${PORT}/api/health`);
+  });
+}
+
+export default app;
